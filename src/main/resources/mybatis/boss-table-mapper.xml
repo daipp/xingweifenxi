@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.BossTableInitMapper" >
+
+  <resultMap id="BossSysCodeMap" type="com.ndtv.vodstat.report.model.BossSysCode" >
+    <id column="codeid" property="codeId" jdbcType="BIGINT" />
+    <result column="state" property="state" jdbcType="BIGINT" />
+    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+    <result column="memo" property="memo" jdbcType="VARCHAR" />
+    <result column="codename" property="codeName" jdbcType="VARCHAR" />
+    <result column="codecontent" property="codeContent" jdbcType="VARCHAR" />
+    <result column="typeid" property="typeId" jdbcType="BIGINT" />
+  </resultMap>
+
+  <resultMap id="BossSysCodeRelationMap" type="com.ndtv.vodstat.report.model.BossSysCodeRelation" >
+    <result column="codeid" property="codeid" jdbcType="BIGINT" />
+    <result column="codeidex" property="codeidex" jdbcType="BIGINT" />
+  </resultMap>
+  
+  <resultMap id="BossProductMap" type="com.ndtv.vodstat.report.model.BossProduct" >
+    <id column="productid" property="productId" jdbcType="BIGINT" />
+    <result column="productname" property="productName" jdbcType="VARCHAR" />
+    <result column="feesystemid" property="feesystemId" jdbcType="BIGINT" />
+    <result column="feesystem" property="feesystem" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BossPackMap" type="com.ndtv.vodstat.report.model.BossPack" >
+    <id column="packid" property="packId" jdbcType="BIGINT" />
+    <result column="packname" property="packName" jdbcType="VARCHAR" />
+    <result column="itemtypeid" property="itemtypeId" jdbcType="BIGINT" />
+    <result column="itemtype" property="itemtype" jdbcType="VARCHAR" />
+    <result column="unitid" property="unitId" jdbcType="BIGINT" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="BIGINT" />
+  </resultMap>
+  
+  <resultMap id="BossPackDealMap" type="com.ndtv.vodstat.report.model.BossPackdeal" >
+    <id column="packdealid" property="packdealId" jdbcType="BIGINT" />
+    <result column="packdealname" property="packdealName" jdbcType="VARCHAR" />
+    <result column="unitid" property="unitId" jdbcType="BIGINT" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="unitcount" property="unitCount" jdbcType="BIGINT" />
+    <result column="price" property="price" jdbcType="BIGINT" />
+  </resultMap>
+
+  <resultMap id="BossCustomerMap" type="com.ndtv.vodstat.report.model.BossCustomer" >
+    <id column="customerid" property="customerid" jdbcType="BIGINT" />
+    <result column="customername" property="customername" jdbcType="VARCHAR" />
+    <result column="servicecardid" property="servicecardid" jdbcType="BIGINT" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+    <result column="districtid" property="districtid" jdbcType="BIGINT" />
+    <result column="district" property="district" jdbcType="VARCHAR" />
+    <result column="town" property="town" jdbcType="VARCHAR" />
+    <result column="townid" property="townid" jdbcType="BIGINT" />
+    <result column="community" property="community" jdbcType="VARCHAR" />
+    <result column="communityid" property="communityid" jdbcType="BIGINT" />
+    <result column="village" property="village" jdbcType="VARCHAR" />
+    <result column="villageid" property="villageid" jdbcType="BIGINT" />
+    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+    <result column="customertypeid" property="customertypeid" jdbcType="BIGINT" />
+    <result column="customertype" property="customertype" jdbcType="VARCHAR" />
+    <result column="importancelevelid" property="importancelevelid" jdbcType="BIGINT" />
+    <result column="importancelevel" property="importancelevel" jdbcType="VARCHAR" />
+    <result column="securitylevelid" property="securitylevelid" jdbcType="BIGINT" />
+    <result column="securitylevel" property="securitylevel" jdbcType="VARCHAR" />
+    <result column="certificatetypeid" property="certificatetypeid" jdbcType="BIGINT" />
+    <result column="certificatetype" property="certificatetype" jdbcType="VARCHAR" />
+    <result column="certificatecode" property="certificatecode" jdbcType="VARCHAR" />
+    <result column="shopid" property="shopid" jdbcType="BIGINT" />
+    <result column="shop" property="shop" jdbcType="VARCHAR" />
+    <result column="zipcode" property="zipcode" jdbcType="VARCHAR" />
+    <result column="memo" property="memo" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BossUserMap" type="com.ndtv.vodstat.report.model.BossUser" >
+    <result column="userid" property="userid" jdbcType="BIGINT" />
+    <result column="customerid" property="customerid" jdbcType="BIGINT" />
+    <result column="accountid" property="accountid" jdbcType="BIGINT" />
+    <result column="contactid" property="contactid" jdbcType="BIGINT" />
+    <result column="customertypeid" property="customertypeid" jdbcType="BIGINT" />
+    <result column="customertype" property="customertype" jdbcType="VARCHAR" />
+    <result column="importancelevelid" property="importancelevelid" jdbcType="BIGINT" />
+    <result column="importancelevel" property="importancelevel" jdbcType="VARCHAR" />
+    <result column="resno" property="resno" jdbcType="VARCHAR" />
+    <result column="shortsim" property="shortsim" jdbcType="VARCHAR" />
+    <result column="simserialno" property="simserialno" jdbcType="VARCHAR" />
+    <result column="stbserialno" property="stbserialno" jdbcType="VARCHAR" />
+    <result column="stbtypeid" property="stbtypeid" jdbcType="BIGINT" />
+    <result column="stbtype" property="stbtype" jdbcType="VARCHAR" />
+    <result column="stbid" property="stbid" jdbcType="BIGINT" />
+    <result column="stb" property="stb" jdbcType="VARCHAR" />
+    <result column="obtainwayid" property="obtainwayid" jdbcType="BIGINT" />
+    <result column="obtainway" property="obtainway" jdbcType="VARCHAR" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+    <result column="shopid" property="shopid" jdbcType="BIGINT" />
+    <result column="shop" property="shop" jdbcType="VARCHAR" />
+    <result column="userstateid" property="userstateid" jdbcType="BIGINT" />
+    <result column="userstate" property="userstate" jdbcType="VARCHAR" />
+    <result column="userstatechangetime" property="userstatechangetime" jdbcType="TIMESTAMP" />
+    <result column="usertypeid" property="usertypeid" jdbcType="BIGINT" />
+    <result column="usertype" property="usertype" jdbcType="VARCHAR" />
+    <result column="usergroupid" property="usergroupid" jdbcType="BIGINT" />
+    <result column="usergroup" property="usergroup" jdbcType="VARCHAR" />
+    <result column="districtid" property="districtid" jdbcType="BIGINT" />
+    <result column="townid" property="townid" jdbcType="BIGINT" />
+    <result column="communityid" property="communityid" jdbcType="BIGINT" />
+    <result column="villageid" property="villageid" jdbcType="BIGINT" />
+    <result column="district" property="district" jdbcType="VARCHAR" />
+    <result column="town" property="town" jdbcType="VARCHAR" />
+    <result column="community" property="community" jdbcType="VARCHAR" />
+    <result column="village" property="village" jdbcType="VARCHAR" />
+    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+    <result column="customername" property="customername" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BossUserPackMap" type="com.ndtv.vodstat.report.model.BossUserPack" >
+    <result column="userid" property="userid" jdbcType="BIGINT" />
+    <result column="bookid" property="bookid" jdbcType="BIGINT" />
+    <result column="packid" property="packid" jdbcType="BIGINT" />
+    <result column="packname" property="packname" jdbcType="VARCHAR" />
+    <result column="fee" property="fee" jdbcType="BIGINT" />
+    <result column="begintime" property="begintime" jdbcType="TIMESTAMP" />
+    <result column="endtime" property="endtime" jdbcType="TIMESTAMP" />
+    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+    <result column="giftcardid" property="giftcardid" jdbcType="BIGINT" />
+    <result column="packtype" property="packtype" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="BossUserProductMap" type="com.ndtv.vodstat.report.model.BossUserProduct" >
+    <result column="userid" property="userid" jdbcType="BIGINT" />
+    <result column="bookid" property="bookid" jdbcType="BIGINT" />
+    <result column="productid" property="productid" jdbcType="BIGINT" />
+    <result column="productname" property="productname" jdbcType="VARCHAR" />
+    <result column="begintime" property="begintime" jdbcType="TIMESTAMP" />
+    <result column="endtime" property="endtime" jdbcType="TIMESTAMP" />
+    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+    <result column="producttype" property="producttype" jdbcType="VARCHAR" />
+    <result column="authoritycode" property="authoritycode" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BossWasuSubCodeMap" type="com.ndtv.vodstat.report.model.BossWasuSubCode" >
+    <result column="userid" property="userid" jdbcType="BIGINT" />
+    <result column="subcode" property="subcode" jdbcType="VARCHAR" />
+    <result column="stateid" property="stateid" jdbcType="BIGINT" />
+    <result column="state" property="state" jdbcType="VARCHAR" />
+  </resultMap>
+
+	<!-- 系统代码同步 -->
+	<delete id="batchDeleteBossSysCode">  
+	    DELETE FROM boss.boss_syscode 
+	</delete>
+	<insert id="batchInsertBossSysCode">  
+		insert into boss.boss_syscode (codeid, state, crtime, memo, codename, codecontent, typeid) values
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.codeId}, #{item.state}, #{item.crtime}, #{item.memo}, #{item.codeName}, #{item.codeContent}, #{item.typeId})
+	    </foreach>
+	</insert>
+
+	<!-- 系统代码关联同步 -->
+	<delete id="batchDeleteBossSysCodeRelation">  
+	    DELETE FROM boss.boss_syscode_syscode 
+	</delete>
+	<insert id="batchInsertBossSysCodeRelation" parameterType="java.util.List">  
+		insert into boss.boss_syscode_syscode (codeid, codeidex)
+	    values
+	    <foreach collection="list" item="item" index="index" separator="," >
+			(#{item.codeid}, #{item.codeidex})
+	    </foreach>
+	</insert>
+
+	
+	<!-- 产品定义同步 -->
+	<delete id="batchDeleteBossProduct">  
+	    DELETE FROM boss.boss_product
+	</delete>
+	<insert id="batchInsertBossProduct">  
+		insert into boss.boss_product (productid, productname, feesystemid, feesystem) values
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.productId}, #{item.productName}, #{item.feesystemId}, #{item.feesystem})
+	    </foreach>
+	</insert>
+	
+	<!-- 产品包定义同步 -->
+	<delete id="batchDeleteBossPack">  
+	    DELETE FROM boss.boss_pack 
+	</delete>
+	<insert id="batchInsertBossPack">  
+		insert into boss.boss_pack (packId, packName, itemtypeid, itemtype, unitid, unit, price) values
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.packId}, #{item.packName}, #{item.itemtypeId}, #{item.itemtype}, #{item.unitId}, #{item.unit}, #{item.price})
+	    </foreach>
+	</insert>
+	
+	<!-- 套餐定义同步 -->
+	<delete id="batchDeleteBossPackdeal">  
+	    DELETE FROM boss.boss_packdeal 
+	</delete>
+	<insert id="batchInsertBossPackdeal">  
+		insert into boss.boss_packdeal (packdealid, packdealname, unitid, unit, unitcount, price) values
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.packdealId}, #{item.packdealName}, #{item.unitId}, #{item.unit}, #{item.unitCount}, #{item.price})
+	    </foreach>
+	</insert>
+	
+
+	<!-- 客户同步 -->
+	<delete id="batchDeleteBossCustomer" parameterType="java.util.List">  
+	    DELETE FROM boss.boss_customer WHERE customerid IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>  
+	</delete>
+	<insert id="batchInsertBossCustomer" parameterType="java.util.List">
+		INSERT INTO boss.boss_customer (customerid, customername, servicecardid, 
+			operator, crtime, districtid, 
+			district, town, townid, 
+			community, communityid, village, 
+			villageid, fulladdress, customertypeid, 
+			customertype, importancelevelid, importancelevel, 
+			securitylevelid, securitylevel, certificatetypeid, 
+			certificatetype, certificatecode, shopid, 
+			shop
+		) VALUES 
+	    <foreach collection="list" item="item" index="index" separator="," >
+			(#{item.customerid}, #{item.customername}, #{item.servicecardid}, 
+			#{item.operator}, #{item.crtime}, #{item.districtid}, 
+			#{item.district}, #{item.town}, #{item.townid}, 
+			#{item.community}, #{item.communityid}, #{item.village}, 
+			#{item.villageid}, #{item.fulladdress}, #{item.customertypeid}, 
+			#{item.customertype}, #{item.importancelevelid}, #{item.importancelevel}, 
+			#{item.securitylevelid}, #{item.securitylevel}, #{item.certificatetypeid}, 
+			#{item.certificatetype}, #{item.certificatecode}, #{item.shopid}, 
+			#{item.shop} )
+	    </foreach>  
+	</insert>
+
+	<!-- 用户同步 -->
+	<delete id="batchDeleteBossUser" parameterType="java.util.List">  
+	    DELETE FROM boss.boss_user WHERE userid IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>
+	</delete>
+	<insert id="batchInsertBossUser" parameterType="java.util.List">
+		insert into boss.boss_user (userid, customerid, accountid, 
+	      contactid, customertypeid, customertype, 
+	      importancelevelid, importancelevel, resno, 
+	      shortsim, simserialno, stbserialno, 
+	      stbtypeid, stbtype, stbid, 
+	      stb, obtainwayid, obtainway, 
+	      operator, crtime, shopid, 
+	      shop, userstateid, userstate, userstatechangetime,
+	      usertypeid, usertype, usergroupid, 
+	      usergroup, districtid, townid, 
+	      communityid, villageid, district, 
+	      town, community, village, 
+	      fulladdress, customername, phone, 
+	      mobile)
+	    values
+	    <foreach collection="list" item="item" index="index" separator="," >
+		 (#{item.userid}, #{item.customerid}, #{item.accountid}, 
+	      #{item.contactid}, #{item.customertypeid}, #{item.customertype}, 
+	      #{item.importancelevelid}, #{item.importancelevel}, #{item.resno}, 
+	      #{item.shortsim}, #{item.simserialno}, #{item.stbserialno}, 
+	      #{item.stbtypeid}, #{item.stbtype}, #{item.stbid}, 
+	      #{item.stb}, #{item.obtainwayid}, #{item.obtainway}, 
+	      #{item.operator}, #{item.crtime}, #{item.shopid}, 
+	      #{item.shop}, #{item.userstateid}, #{item.userstate}, #{item.userstatechangetime},
+	      #{item.usertypeid}, #{item.usertype}, #{item.usergroupid}, 
+	      #{item.usergroup}, #{item.districtid}, #{item.townid}, 
+	      #{item.communityid}, #{item.villageid}, #{item.district}, 
+	      #{item.town}, #{item.community}, #{item.village}, 
+	      #{item.fulladdress}, #{item.customername}, #{item.phone}, 
+	      #{item.mobile})
+	    </foreach>
+	</insert>
+
+	<!-- 用户产品包同步 -->
+	<delete id="batchDeleteBossUserPack" parameterType="java.util.List">  
+	    DELETE FROM boss.boss_userpack WHERE userid IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>  
+	</delete>
+	<insert id="batchInsertBossUserPack" parameterType="java.util.List">
+		insert into boss.boss_userpack (userid, bookid, packid, 
+	      packname, fee, begintime, 
+	      endtime, crtime, giftcardid, 
+	      packtype)
+	    values
+	    <foreach collection="list" item="item" index="index" separator="," >
+	      (#{item.userid}, #{item.bookid}, #{item.packid}, 
+	      #{item.packname}, #{item.fee}, #{item.begintime}, 
+	      #{item.endtime}, #{item.crtime}, #{item.giftcardid}, 
+	      #{item.packtype})
+	    </foreach>
+	</insert>
+
+	<!-- 用户产品同步 -->
+	<delete id="batchDeleteBossUserProduct" parameterType="java.util.List">  
+	    DELETE FROM boss.boss_userproduct WHERE userid IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>  
+	</delete>
+	<insert id="batchInsertBossUserProduct" parameterType="java.util.List">
+		insert into boss.boss_userproduct (userid, bookid, productid, 
+	      productname, begintime, endtime,crtime, producttype, authoritycode)
+	    values
+	    <foreach collection="list" item="item" index="index" separator="," >
+	     (#{item.userid}, #{item.bookid}, #{item.productid}, 
+		 #{item.productname}, #{item.begintime}, #{item.endtime}, #{item.crtime}, #{item.producttype}, #{item.authoritycode})
+	    </foreach>
+	</insert>
+
+	<!-- 用户华数账号同步 -->
+	<delete id="batchDeleteBossWasuSubCode" parameterType="java.util.List">  
+	    DELETE FROM boss.boss_wasusubcode WHERE userid IN  
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}   
+	    </foreach>  
+	</delete>
+	<insert id="batchInsertBossWasuSubCode" parameterType="java.util.List">
+		insert into boss.boss_wasusubcode (userid, subcode, stateid, 
+	      state)
+	    values
+	    <foreach collection="list" item="item" index="index" separator="," >
+	    (#{item.userid}, #{item.subcode}, #{item.stateid}, #{item.state})
+	    </foreach>
+	</insert>
+
+
+</mapper>

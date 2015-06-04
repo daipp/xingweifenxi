@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.boss.dao.BossViewMapper">
+	
+	<!-- 系统代码 -->
+	<resultMap id="BossSysCodeMap" type="com.ndtv.vodstat.report.model.BossSysCode">
+		<result column="typeId" property="typeId" jdbcType="DECIMAL" />
+	    <result column="codeId" property="codeId" jdbcType="DECIMAL" />
+	    <result column="state" property="state" jdbcType="DECIMAL" />
+	    <result column="codeName" property="codeName" jdbcType="VARCHAR" />
+	    <result column="codeContent" property="codeContent" jdbcType="VARCHAR" />
+	    <result column="memo" property="memo" jdbcType="VARCHAR" />
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	    <!-- <result column="typeName" property="typeName" jdbcType="VARCHAR" /> -->
+	</resultMap>
+	
+	<!-- 系统代码关联 -->
+	<resultMap id="BossSysCodeRelationMap" type="com.ndtv.vodstat.report.model.BossSysCodeRelation">
+		<result column="codeidex" property="codeidex" jdbcType="DECIMAL" />
+	    <result column="codeid" property="codeid" jdbcType="DECIMAL" />
+	</resultMap>
+
+	<!-- 产品定义 -->
+	<resultMap id="BossProductMap" type="com.ndtv.vodstat.report.model.BossProduct">
+		<id column="productid" property="productId" jdbcType="DECIMAL" />
+		<result column="productname" property="productName" jdbcType="VARCHAR" />
+		<result column="feesystemid" property="feesystemId" jdbcType="DECIMAL" />
+		<result column="feesystem" property="feesystem" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!-- 产品包定义 -->
+	<resultMap id="BossPackMap" type="com.ndtv.vodstat.report.model.BossPack">
+		<id column="packid" property="packId" jdbcType="DECIMAL" />
+		<result column="packname" property="packName" jdbcType="VARCHAR" />
+		<result column="itemtypeid" property="itemtypeId" jdbcType="DECIMAL" />
+		<result column="itemtype" property="itemtype" jdbcType="VARCHAR" />
+		<result column="unitid" property="unitId" jdbcType="DECIMAL" />
+		<result column="unit" property="unit" jdbcType="VARCHAR" />
+		<result column="price" property="price" jdbcType="DECIMAL" />
+	</resultMap>
+
+	<!-- 套餐定义 -->
+	<resultMap id="BossPackdealMap" type="com.ndtv.vodstat.report.model.BossPackdeal">
+		<id column="packdealid" property="packdealId" jdbcType="DECIMAL" />
+		<result column="packdealname" property="packdealName" jdbcType="VARCHAR" />
+		<result column="unitid" property="unitId" jdbcType="DECIMAL" />
+		<result column="unit" property="unit" jdbcType="VARCHAR" />
+		<result column="unitcount" property="unitCount" jdbcType="DECIMAL" />
+		<result column="price" property="price" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<!-- BOSS客户信息  -->
+	<resultMap id="BossCustomerMap" type="com.ndtv.vodstat.report.model.BossCustomer" >
+	    <id column="customerid" property="customerid" jdbcType="DECIMAL" />
+	    <result column="customername" property="customername" jdbcType="VARCHAR" />
+	    <result column="servicecardid" property="servicecardid" jdbcType="DECIMAL" />
+	    <result column="operator" property="operator" jdbcType="VARCHAR" />
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	    <result column="districtid" property="districtid" jdbcType="DECIMAL" />
+	    <result column="district" property="district" jdbcType="VARCHAR" />
+	    <result column="town" property="town" jdbcType="VARCHAR" />
+	    <result column="townid" property="townid" jdbcType="DECIMAL" />
+	    <result column="community" property="community" jdbcType="VARCHAR" />
+	    <result column="communityid" property="communityid" jdbcType="DECIMAL" />
+	    <result column="village" property="village" jdbcType="VARCHAR" />
+	    <result column="villageid" property="villageid" jdbcType="DECIMAL" />
+	    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+	    <result column="customertypeid" property="customertypeid" jdbcType="DECIMAL" />
+	    <result column="customertype" property="customertype" jdbcType="VARCHAR" />
+	    <result column="importancelevelid" property="importancelevelid" jdbcType="DECIMAL" />
+	    <result column="importancelevel" property="importancelevel" jdbcType="VARCHAR" />
+	    <result column="securitylevelid" property="securitylevelid" jdbcType="DECIMAL" />
+	    <result column="securitylevel" property="securitylevel" jdbcType="VARCHAR" />
+	    <result column="certificatetypeid" property="certificatetypeid" jdbcType="DECIMAL" />
+	    <result column="certificatetype" property="certificatetype" jdbcType="VARCHAR" />
+	    <result column="certificatecode" property="certificatecode" jdbcType="VARCHAR" />
+	    <result column="shopid" property="shopid" jdbcType="DECIMAL" />
+	    <result column="shop" property="shop" jdbcType="VARCHAR" />
+	    <result column="zipcode" property="zipcode" jdbcType="VARCHAR" />
+	    <result column="memo" property="memo" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- BOSS用户信息  -->
+	<resultMap id="BossUserMap" type="com.ndtv.vodstat.report.model.BossUser" >
+	    <result column="userid" property="userid" jdbcType="DECIMAL" />
+	    <result column="customerid" property="customerid" jdbcType="DECIMAL" />
+	    <result column="accountid" property="accountid" jdbcType="DECIMAL" />
+	    <result column="contactid" property="contactid" jdbcType="DECIMAL" />
+	    <result column="customertypeid" property="customertypeid" jdbcType="DECIMAL" />
+	    <result column="customertype" property="customertype" jdbcType="VARCHAR" />
+	    <result column="importancelevelid" property="importancelevelid" jdbcType="DECIMAL" />
+	    <result column="importancelevel" property="importancelevel" jdbcType="VARCHAR" />
+	    <result column="resno" property="resno" jdbcType="VARCHAR" />
+	    <result column="shortsim" property="shortsim" jdbcType="VARCHAR" />
+	    <result column="simserialno" property="simserialno" jdbcType="VARCHAR" />
+	    <result column="stbserialno" property="stbserialno" jdbcType="VARCHAR" />
+	    <result column="stbtypeid" property="stbtypeid" jdbcType="DECIMAL" />
+	    <result column="stbtype" property="stbtype" jdbcType="VARCHAR" />
+	    <result column="stbid" property="stbid" jdbcType="DECIMAL" />
+	    <result column="stb" property="stb" jdbcType="VARCHAR" />
+	    <result column="obtainwayid" property="obtainwayid" jdbcType="DECIMAL" />
+	    <result column="obtainway" property="obtainway" jdbcType="VARCHAR" />
+	    <result column="operator" property="operator" jdbcType="VARCHAR" />
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	    <result column="shopid" property="shopid" jdbcType="DECIMAL" />
+	    <result column="shop" property="shop" jdbcType="VARCHAR" />
+	    <result column="userstateid" property="userstateid" jdbcType="DECIMAL" />
+	    <result column="userstate" property="userstate" jdbcType="VARCHAR" />
+	    <result column="userstatechangetime" property="userstatechangetime" jdbcType="TIMESTAMP" />
+	    <result column="usertypeid" property="usertypeid" jdbcType="DECIMAL" />
+	    <result column="usertype" property="usertype" jdbcType="VARCHAR" />
+	    <result column="usergroupid" property="usergroupid" jdbcType="DECIMAL" />
+	    <result column="usergroup" property="usergroup" jdbcType="VARCHAR" />
+	    <result column="districtid" property="districtid" jdbcType="DECIMAL" />
+	    <result column="townid" property="townid" jdbcType="DECIMAL" />
+	    <result column="communityid" property="communityid" jdbcType="DECIMAL" />
+	    <result column="villageid" property="villageid" jdbcType="DECIMAL" />
+	    <result column="district" property="district" jdbcType="VARCHAR" />
+	    <result column="town" property="town" jdbcType="VARCHAR" />
+	    <result column="community" property="community" jdbcType="VARCHAR" />
+	    <result column="village" property="village" jdbcType="VARCHAR" />
+	    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+	    <result column="customername" property="customername" jdbcType="VARCHAR" />
+	    <result column="phone" property="phone" jdbcType="VARCHAR" />
+	    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- BOSS用户产品包  -->
+	<resultMap id="BossUserPackMap" type="com.ndtv.vodstat.report.model.BossUserPack" >
+	    <result column="userid" property="userid" jdbcType="DECIMAL" />
+	    <result column="bookid" property="bookid" jdbcType="DECIMAL" />
+	    <result column="packid" property="packid" jdbcType="DECIMAL" />
+	    <result column="packname" property="packname" jdbcType="VARCHAR" />
+	    <result column="fee" property="fee" jdbcType="DECIMAL" />
+	    <result column="begintime" property="begintime" jdbcType="TIMESTAMP" />
+	    <result column="endtime" property="endtime" jdbcType="TIMESTAMP" />
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	    <result column="giftcardid" property="giftcardid" jdbcType="DECIMAL" />
+	    <result column="packtype" property="packtype" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- BOSS用户产品  -->
+	<resultMap id="BossUserProductMap" type="com.ndtv.vodstat.report.model.BossUserProduct" >
+	    <result column="userid" property="userid" jdbcType="DECIMAL" />
+	    <result column="bookid" property="bookid" jdbcType="DECIMAL" />
+	    <result column="productid" property="productid" jdbcType="DECIMAL" />
+	    <result column="productname" property="productname" jdbcType="VARCHAR" />
+	    <result column="begintime" property="begintime" jdbcType="TIMESTAMP" />
+	    <result column="endtime" property="endtime" jdbcType="TIMESTAMP" />
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	    <result column="producttype" property="producttype" jdbcType="VARCHAR" />
+	    <result column="authoritycode" property="authoritycode" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- BOSS用户华数账号  -->
+	<resultMap id="BossWasuSubCodeMap" type="com.ndtv.vodstat.report.model.BossWasuSubCode">
+		<result column="userid" property="userid" jdbcType="DECIMAL" />
+	    <result column="subcode" property="subcode" jdbcType="VARCHAR" />
+	    <result column="stateid" property="stateid" jdbcType="DECIMAL" />
+	    <result column="state" property="state" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- 查所有系统代码 -->
+	<select id="getSysCodes" resultMap="BossSysCodeMap">
+		select * from nbboss.view_vodstat_syscode
+	</select>
+	
+	<!-- 查所有系统代码关联 -->
+	<select id="getSysCodeRelations" resultMap="BossSysCodeRelationMap">
+		select * from nbboss.view_vodstat_syscodesyscode
+	</select>
+	
+	<!-- 查所有产品定义 -->
+	<select id="getProductDefs" resultMap="BossProductMap">
+		select * from nbboss.view_vodstat_product
+	</select>
+	
+	<!-- 查所有产品包定义 -->
+	<select id="getPackDefs" resultMap="BossPackMap">
+		select * from nbboss.view_vodstat_pack
+	</select>
+	
+	<!-- 查所有套餐定义 -->
+	<select id="getPackdealDefs" resultMap="BossPackdealMap">
+		select * from nbboss.view_vodstat_packdeal
+	</select>
+	
+	<!-- 查修改过的、受理过的客户编号 -->
+	<select id="getModifiedCustomerIds" resultType="java.lang.Long" >
+	<![CDATA[
+	
+		select targetid from modifylog${queryMonth} where targettype = '客户'
+			and crtime between #{beginTime} and #{endTime}
+		union
+		select customerid from userinfo where userid in (
+		    select targetid from modifylog${queryMonth} where targettype = '用户'
+		    	and crtime between #{beginTime} and #{endTime}
+		    union
+		    select userId from userinfoworksheetf uif where 1=1
+				and uif.modifytime between #{beginTime} and #{endTime}
+		)
+		union
+		select customerId from usertranscustomerworksheetf utf where utf.worksheetid in (
+			select wa.worksheetid from worksheetarchive wa where 1=1
+				and wa.crtime between #{beginTime} and #{endTime}
+		)
+		union
+		select customerId from customer where accepttime between #{beginTime} and #{endTime}
+		
+	]]>
+	</select>
+	
+	<!-- 根据客户编号查客户 -->
+	<select id="getCustomers" resultMap="BossCustomerMap" parameterType="java.util.List">
+		select * from nbboss.view_vodstat_customer where customerid in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</select>
+	
+	<!-- 根据客户编号查用户 -->
+	<select id="getUsersByCustomerIds" resultMap="BossUserMap" parameterType="java.util.List">
+		select * from nbboss.view_vodstat_user where customerid in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</select>
+	
+	<!-- 根据用户编号查用户产品包 -->
+	<select id="getUserPacksByUserIds" resultMap="BossUserPackMap" parameterType="java.util.List">
+		select * from nbboss.view_vodstat_userpack where userid in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</select>
+	
+	<!-- 根据用户编号查用户产品 -->
+	<select id="getUserProductsByUserIds" resultMap="BossUserProductMap" parameterType="java.util.List">
+		select * from nbboss.view_vodstat_userproduct where userid in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</select>
+	
+	<!-- 根据用户编号查华数账号 -->
+	<select id="getWasuSubCodesByUserIds" resultMap="BossWasuSubCodeMap" parameterType="java.util.List">
+		select * from nbboss.view_vodstat_wasusubcode where userid in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+	        #{item}
+	    </foreach>
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	<!-- 查单个BOSS客户  -->
+	<select id="getCustomer" resultMap="BossCustomerMap">
+		SELECT bv.customerid,bv.customername,bv.servicecardid
+		FROM view_vodstat_customer bv 
+		where bv.customerid =  #{customerId} 
+		
+<!-- 
+		<![CDATA[sql]]> 
+-->
+		
+	</select>
+	
+	
+	
+	
+	
+</mapper>

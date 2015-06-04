@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.ReportAreaMonthMapper">
+	<!-- 返回结果 -->
+	<resultMap id="areaMonthReportMap" type="com.ndtv.vodstat.report.model.AreaMonthReport">
+	    <result column="ID" property="id" jdbcType="DECIMAL" />
+		<result column="REP_DATE" property="repDate" jdbcType="DATE" />
+		
+		<result column="TOWN" property="town" jdbcType="VARCHAR" />
+	    <result column="COMMUNITY" property="community" jdbcType="VARCHAR" />
+	    <result column="VILLAGE" property="village" jdbcType="VARCHAR" />
+	    <result column="CUSTOMERTYPE" property="customerType" jdbcType="VARCHAR" />
+    	<result column="TOWNID" property="townId" jdbcType="DECIMAL" />
+	    <result column="COMMUNITYID" property="communityId" jdbcType="DECIMAL" />
+	    <result column="VILLAGEID" property="villageId" jdbcType="DECIMAL" />
+	    <result column="CUSTOMERTYPEID" property="customerTypeId" jdbcType="DECIMAL" />
+	    
+	    <!-- 以下是活跃度方面的内容 :7 -->
+	    <result column="ACTIVE_USERS" property="activeUsers" jdbcType="DECIMAL" />
+	    <result column="ONLINE_BOOKED" property="onlineBooked" jdbcType="DECIMAL" />
+	    <result column="ONLINE_UNBOOK" property="onlineUnbook" jdbcType="DECIMAL" />
+	    <result column="OFFLINE_BOOKED" property="offlineBooked" jdbcType="DECIMAL" />
+	    <result column="OFFLINE_UNBOOK" property="offlineUnbook" jdbcType="DECIMAL" />
+	    <result column="INACTIVE_ONLINE" property="inactiveOnline" jdbcType="DECIMAL" />
+	    <result column="INACTIVE_OFFLINE" property="inactiveOffline" jdbcType="DECIMAL" />
+	    
+		<!-- 以下是点播续费率方面的内容 :5 -->
+	    <result column="VOD_EXPIRING" property="vodExpiring" jdbcType="DECIMAL" />
+	    <result column="VOD_EXPIRING_BOOK" property="vodExpiringBook" jdbcType="DECIMAL" />
+	    <result column="VOD_EXPIRED_BOOK" property="vodExpiredBook" jdbcType="DECIMAL" />
+	    <result column="VOD_PREBOOK" property="vodPreBook" jdbcType="DECIMAL" />
+	    <!-- <result column="VOD_NEWBOOK" property="vodNewBook" jdbcType="DECIMAL" /> -->
+	    <!-- 以下是宽带续费率方面的内容 :5 -->
+	    <result column="BB_EXPIRING" property="bbExpiring" jdbcType="DECIMAL" />
+	    <result column="BB_EXPIRING_BOOK" property="bbExpiringBook" jdbcType="DECIMAL" />
+	    <result column="BB_EXPIRED_BOOK" property="bbExpiredBook" jdbcType="DECIMAL" />
+	    <result column="BB_PREBOOK" property="bbPreBook" jdbcType="DECIMAL" />
+	    <!-- <result column="BB_NEWBOOK" property="vodNewBook" jdbcType="DECIMAL" /> -->
+	    
+	    <!-- 以下都是针对客户-用户情况汇总报表 :14 -->
+	    <result column="REPORT_RANGE" property="reportRange" jdbcType="VARCHAR" />
+	    <result column="CUSTOMERS" property="customers" jdbcType="DECIMAL" />
+	    <result column="DVB_USERS" property="dvbUsers" jdbcType="DECIMAL" />
+	    <result column="BB_USERS" property="bbUsers" jdbcType="DECIMAL" />
+	    <result column="VOD_USERS" property="vodUsers" jdbcType="DECIMAL" />
+	    <result column="VOD_BOOKED" property="vodBooked" jdbcType="DECIMAL" />
+	    <result column="BB_BOOKED" property="bbBooked" jdbcType="DECIMAL" />
+	    <result column="VOD_UNBOOK" property="vodUnbook" jdbcType="DECIMAL" />
+	    <result column="BB_UNBOOK" property="bbUnbook" jdbcType="DECIMAL" />
+	    <!-- 以下是净增 -->
+	    <result column="NEW_DVB" property="newDvb" jdbcType="DECIMAL" />
+	    <result column="NEW_VOD" property="newVod" jdbcType="DECIMAL" />
+	    <result column="NEW_BB" property="newBb" jdbcType="DECIMAL" />
+	    <result column="NEW_VOD_BOOKED" property="newVodBooked" jdbcType="DECIMAL" />
+	    <result column="NEW_BB_BOOKED" property="newBbBooked" jdbcType="DECIMAL" />
+	    
+    </resultMap>
+    
+    
+	<sql id="userInfoBasicColumn">
+		bv.userid,bv.customerid,bv.customertype,bv.stb,bv.crtime,bv.customername,bv.town,bv.community,bv.village,bv.fulladdress,bv.phone,bv.mobile
+		<!-- ,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime -->
+	</sql>
+	
+	<sql id="userInfoBasicSelect">
+		SELECT <include refid="userInfoBasicColumn" /> FROM boss.boss_user bv
+	</sql>
+	
+	<sql id="ReportAreaM_Columns">
+		REP_DATE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID, 
+		ACTIVE_USERS, ONLINE_BOOKED,ONLINE_UNBOOK,OFFLINE_BOOKED,OFFLINE_UNBOOK,INACTIVE_ONLINE,INACTIVE_OFFLINE,
+		VOD_EXPIRING,VOD_EXPIRING_BOOK,VOD_EXPIRED_BOOK,VOD_PREBOOK,
+		BB_EXPIRING,BB_EXPIRING_BOOK,BB_EXPIRED_BOOK,BB_PREBOOK,
+		
+		REPORT_RANGE, CUSTOMERS,DVB_USERS,VOD_USERS,BB_USERS, NEW_DVB,NEW_VOD,NEW_BB,
+		VOD_BOOKED,BB_BOOKED,NEW_VOD_BOOKED,NEW_BB_BOOKED,VOD_UNBOOK,BB_UNBOOK
+	</sql>
+	<sql id="ReportAreaM_AllColumns">
+		ID, <include refid="ReportAreaM_Columns" />
+	</sql>
+	
+	<sql id="selectColumn">
+		<trim prefix="" suffixOverrides="," >
+			<if test="showRepDate">
+				REP_DATE,
+			</if>
+			<if test="showCustomerType">
+				CUSTOMERTYPE,CUSTOMERTYPEID,
+			</if>
+			<if test="showTown">
+				TOWN,TOWNID,
+			</if>
+			<if test="showCommunity">
+				COMMUNITY, COMMUNITYID,
+			</if>
+			<if test="showVillage">
+				VILLAGE, VILLAGEID,
+			</if>
+		</trim>
+	</sql>
+	
+	<sql id="sum_vodActive">
+		sum(ACTIVE_USERS) ACTIVE_USERS,
+		sum(ONLINE_BOOKED) ONLINE_BOOKED,
+		sum(ONLINE_UNBOOK) ONLINE_UNBOOK,
+		sum(OFFLINE_BOOKED) OFFLINE_BOOKED,
+		sum(OFFLINE_UNBOOK) OFFLINE_UNBOOK,
+		sum(INACTIVE_ONLINE) INACTIVE_ONLINE,
+		sum(INACTIVE_OFFLINE) INACTIVE_OFFLINE
+	</sql>
+	<sql id="sum_bookRate">
+		sum(VOD_EXPIRING) VOD_EXPIRING,
+		sum(VOD_EXPIRING_BOOK) VOD_EXPIRING_BOOK,
+		sum(VOD_EXPIRED_BOOK) VOD_EXPIRED_BOOK,
+		sum(VOD_PREBOOK) VOD_PREBOOK,
+		sum(BB_EXPIRING) BB_EXPIRING,
+		sum(BB_EXPIRING_BOOK) BB_EXPIRING_BOOK,
+		sum(BB_EXPIRED_BOOK) BB_EXPIRED_BOOK,
+		sum(BB_PREBOOK) BB_PREBOOK
+	</sql>
+	<sql id="sum_statUsers">
+		REPORT_RANGE,
+		sum(CUSTOMERS) CUSTOMERS,
+		sum(DVB_USERS) DVB_USERS,
+		sum(BB_USERS) BB_USERS,
+		sum(VOD_USERS) VOD_USERS,
+		sum(NEW_DVB) NEW_DVB,
+		sum(NEW_VOD) NEW_VOD,
+		sum(NEW_BB) NEW_BB,
+		sum(VOD_BOOKED) VOD_BOOKED,
+		sum(BB_BOOKED) BB_BOOKED,
+		sum(NEW_VOD_BOOKED) NEW_VOD_BOOKED,
+		sum(NEW_BB_BOOKED) NEW_BB_BOOKED,
+		sum(VOD_UNBOOK) VOD_UNBOOK,
+		sum(BB_UNBOOK) BB_UNBOOK
+	</sql>
+	
+	<!-- 查月报表 -->
+	<select id="findAreaMonthReport" parameterType="areaCondition" resultMap="areaMonthReportMap">
+		select 
+		<include refid="selectColumn" />,
+		<include refid="sum_vodActive" />,
+		<include refid="sum_bookRate" />,
+		<include refid="sum_statUsers"/>
+		from REPM_VODAREA bv
+		<where>
+	  		<if test="repDate1 != null">
+	  			<if test="repDate2 == null">
+	  				REP_DATE = #{repDate1}
+	  			</if>
+	  			<if test="repDate2 != null">
+					(REP_DATE &gt;= #{repDate1} and REP_DATE &lt;= #{repDate2})
+	  			</if>
+	  		</if>
+	  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		</where>
+		group by <include refid="selectColumn" />
+	</select>
+	
+	<!-- 指定指定月份的报表(repDate:为该月某一天) -->
+	<select id="getAreaMonthReport" parameterType="java.util.Date" resultMap="areaMonthReportMap">
+		select <include refid="ReportAreaM_AllColumns" />
+		from REPM_VODAREA where rep_date = concat(DATE_FORMAT(#{repDate},'%Y%m') , '01')
+	</select>
+	
+	<!-- 删除月报表 -->
+	<delete id="deleteAreaMonthReport" parameterType="java.util.Date">
+		delete from repm_vodarea where DATE_FORMAT(rep_date,'%Y%m') = DATE_FORMAT(#{repDate},'%Y%m')
+		and report_range = #{reportRange}
+	</delete>
+	
+	<!-- 月报表生成: 初始化各区域客户类型 -->
+	<insert id="insertAreaMonthReport" parameterType="java.util.Date" flushCache="true">
+		INSERT INTO repm_vodarea(<include refid="ReportAreaM_Columns" />)
+		SELECT DATE(#{repDate}),
+		customertype,customertypeid,town,townid,community,communityid,village,villageid,
+		-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1,
+		'month',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+		FROM boss.boss_user 
+		GROUP BY customertype,customertypeid,town,townid,community,communityid,village,villageid
+		UNION
+		SELECT DATE(#{repDate}),
+		customertype,customertypeid,town,townid,community,communityid,village,villageid,
+		-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1,
+		'month',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+		FROM boss.boss_customer 
+		GROUP BY customertype,customertypeid,town,townid,community,communityid,village,villageid
+		
+<!-- 	SELECT DATE_ADD(DATE(#{repDate}), interval -day(#{repDate})+ 1 day),
+			c.townid,c.communityid,c.villageid,c.customertypeid,
+			c.town,c.community,c.village,c.customertype,
+			-1,-1,-1,-1,-1,-1,-1
+		FROM boss.boss_user u
+		JOIN boss.boss_customer c ON c.customerid = u.customerid
+		WHERE u.userstateid != 8058 and c.crtime &lt; DATE_ADD(LAST_DAY(#{repDate}),INTERVAL 1 DAY )
+		GROUP BY c.townid,c.communityid,c.villageid,c.customertypeid,
+			c.town,c.community,c.village,c.customertype
+ -->
+	</insert>
+	
+	<sql id="commonCondtion">
+		b.customertypeid = r.customertypeid
+		AND b.townid = r.townid
+		AND b.communityid = r.communityid
+		AND b.villageid = r.villageid
+	</sql>
+	
+	<!-- ////////////////////////////////////////// -->
+	<!-- 以下是客户-用户情况汇总字段的更新与查询(生成报表数据的时候,输入的日期为月底;在查询的时候,输入的日期为月初) -->
+	<!-- 更新客户数量 -->
+	<update id="update_Customers" >
+		UPDATE repm_vodarea r
+		SET r.customers = (
+			SELECT COUNT(*) FROM boss.boss_customer b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate2}),INTERVAL 1 DAY )
+			AND EXISTS (SELECT bu.userid FROM boss.boss_user bu WHERE bu.customerid = b.customerid AND bu.userstateid not in(8058,8055) )
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getCustomers" resultMap="com.ndtv.vodstat.report.dao.BossCustomerInfoMap" parameterType="areaCondition">
+		SELECT bv.customerid,bv.servicecardid,bv.customername,bv.customertype,bv.town,bv.community,bv.village,bv.fulladdress ,bv.crtime
+		FROM boss.boss_customer bv 
+		where exists (select bu.userid from boss.boss_user bu where bu.customerid = bv.customerid and bu.userstateid not in(8058,8055) )
+  		<if test="repDate != null">
+  			and Date(bv.crtime) &lt;= LAST_DAY(#{repDate})
+  		</if>
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+	</select>
+	
+	<!-- 更新用户类型数量 -->
+	<update id="update_UserTypes" >
+		UPDATE repm_vodarea r
+		SET r.${columnName} = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate2}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="columnName == 'BB_USERS'">
+				AND b.userTypeId = 5064
+			</if>
+			<if test="columnName == 'DVB_USERS'">
+				AND b.userTypeId = 1521
+			</if>
+			<if test="columnName == 'VOD_USERS'">
+				AND b.userTypeId = 1051
+			</if>
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单 -->
+	<select id="getUserTypes" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		<include refid="userInfoBasicSelect" />
+		where bv.userstateid not in(8058,8055) 
+		AND bv.userTypeId = #{userTypeId}
+  		<if test="repDate != null">
+  			and Date(bv.crtime) &lt;= LAST_DAY(#{repDate})
+  		</if>
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+	</select>
+	
+	<!-- 更新用户类型在线 -->
+	<update id="update_UserTypeBooked" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_booked = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate2}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+			</if>
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+			</if>
+			AND EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid 
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.begintime) &lt;= #{repDate2}
+			)
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypeBooked" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		<include refid="userInfoBasicSelect" />
+		WHERE 1=1 
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		AND bv.crtime &lt; DATE_ADD(LAST_DAY(#{repDate}),INTERVAL 1 DAY )
+		AND bv.userstateid not in(8058,8055)
+		<if test="getWhat == 'getVodBooked'">
+			AND bv.userTypeId = 1051
+		</if>
+		<if test="getWhat == 'getBbBooked'">
+			AND bv.userTypeId = 5064
+		</if>
+		AND EXISTS (
+			SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid 
+			<if test="getWhat == 'getVodBooked'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+		)
+	</select>
+	
+	<!-- 更新离线用户类型数量(月末这一天) -->
+	<update id="update_UserTypeUnbook" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_unbook = (
+			SELECT COUNT(b.userid) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate2}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+				AND NOT EXISTS (
+					SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+			<if test="userType == 'DVB'"><!-- 不存在此条件 -->
+				AND b.userTypeId = 1521
+				AND NOT EXISTS (
+					SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+				AND NOT EXISTS (
+					SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypeUnbook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		<include refid="userInfoBasicSelect" />
+		WHERE 1=1 
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		AND bv.crtime &lt; DATE_ADD(LAST_DAY(#{repDate}),INTERVAL 1 DAY )
+		AND bv.userstateid not in(8058,8055)
+  		<if test="getWhat == 'getBbUnbook'">
+			AND bv.userTypeId = 5064
+			AND NOT EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid
+				AND up.endtime &gt;= Date(LAST_DAY(#{repDate})) AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+			)
+		</if>
+  		<if test="getWhat == 'getDvbUnbook'"><!-- 不存在此条件 -->
+			AND bv.userTypeId = 1521
+			AND NOT EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid
+				AND up.endtime &gt;= Date(LAST_DAY(#{repDate})) AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+			)
+		</if>
+  		<if test="getWhat == 'getVodUnbook'">
+			AND bv.userTypeId = 1051
+			AND NOT EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= Date(LAST_DAY(#{repDate})) AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+			)
+		</if>
+	</select>
+	
+	<sql id="midTab">
+		select REP_DATE,REPORT_RANGE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID,
+		DVB_USERS,VOD_USERS,BB_USERS,VOD_BOOKED,BB_BOOKED
+		from  repm_vodarea
+	</sql>
+	<!-- 更新净增用户类型数量 -->
+	<update id="update_NewUserTypes" >
+		UPDATE repm_vodarea r
+		SET r.NEW_${userType} = r.${userType}_users - IFNULL((
+			SELECT b.${userType}_users FROM (<include refid="midTab" />) b 
+			WHERE <include refid="commonCondtion" />
+			AND b.report_range = #{reportRange}
+			AND b.rep_date = #{repDateLast}
+		),0) where rep_date = DATE(#{repDate}) and report_range = #{reportRange}
+	</update>
+	<!-- 查清单 -->
+	<select id="getNewUserTypes" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		<include refid="userInfoBasicSelect" />
+		where bv.userstateid not in(8058,8055) 
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+  		<if test="repDate != null">
+  			and Date(bv.crtime) &lt;= LAST_DAY(#{repDate})
+  			and Date(bv.crtime) &gt; #{repDateLast}
+  		</if>
+  		<if test="getWhat == 'getNewDvb'">
+			AND bv.userTypeId = 1521
+  		</if>
+  		<if test="getWhat == 'getNewVod'">
+			AND bv.userTypeId = 1051
+  		</if>
+  		<if test="getWhat == 'getNewBB'">
+			AND bv.userTypeId = 5064
+  		</if>
+	</select>
+	
+	<!-- 更新净增在线用户类型数量 -->
+	<update id="update_NewUserTypeBooked" >
+		UPDATE repm_vodarea r
+		SET r.NEW_${userType}_BOOKED = r.${userType}_BOOKED - IFNULL((
+			SELECT b.${userType}_BOOKED FROM (<include refid="midTab" />) b 
+			WHERE <include refid="commonCondtion" />
+			AND b.report_range = #{reportRange}
+			AND b.rep_date = #{repDateLast}
+		),0) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单 -->
+	<select id="getNewUserTypeBooked" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		<include refid="userInfoBasicSelect" />
+		where bv.userstateid not in(8058,8055) 
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+  		<if test="getWhat == 'getNewBbBooked'">
+			AND b.userTypeId = 5064
+			AND EXISTS (
+				SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+				AND DATE(up.crtime) &gt; #{repDateLast} AND DATE(up.crtime) &lt;= #{repDate}
+			)
+		</if>
+  		<if test="getWhat == 'getNewDvbBooked'"><!-- 不存在此条件 -->
+			AND b.userTypeId = 1521
+			AND EXISTS (
+				SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+				AND DATE(up.crtime) &gt; #{repDateLast} AND DATE(up.crtime) &lt;= #{repDate}
+			)
+		</if>
+  		<if test="getWhat == 'getNewVodBooked'">
+			AND b.userTypeId = 1051
+			AND EXISTS (
+				SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND DATE(up.crtime) &gt; #{repDateLast} AND DATE(up.crtime) &lt;= #{repDate}
+			)
+		</if>
+	</select>
+	
+	
+	
+	<!-- ////////////////////////////////////////// -->
+	<!-- 以下是活跃度相关字段的更新与查询 -->
+	
+	<!-- 更新:活跃用户 -->
+	<update id="update_ActiveUsers" parameterType="java.lang.String" statementType="STATEMENT">
+		UPDATE repm_vodarea r
+		SET r.active_users= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND EXISTS (SELECT wn.userid FROM wasulog.wasuna_${_parameter} wn WHERE wn.userid = b.userid)
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = '${_parameter}' 
+	</update>
+	<!-- 查清单  -->
+	<select id="getActiveUsers" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		,(select IFNULL(sum(e.login_times),0) from epglog.epgloga_${repMonth} e WHERE e.userid = bv.userid) onlineTimes
+		,(select IFNULL(sum(wn.active_times),0) from wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid) activeTimes
+		FROM boss.boss_user bv
+		where 1=1
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+  		and EXISTS (SELECT active_times FROM wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid)
+	</select>
+		
+	<!-- 更新:登录用户(订购) -->
+	<update id="update_OnlineBooked">
+		UPDATE repm_vodarea r
+		SET r.online_booked= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid) 
+			AND EXISTS (SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+			) 
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = '${repDateMonthDesc}'
+	</update>
+	<!-- 查清单  -->
+	<select id="getOnlineBooked" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		,(select IFNULL(sum(e.login_times),0) from epglog.epgloga_${repMonth} e WHERE e.userid = bv.userid) onlineTimes
+		,(select IFNULL(sum(wn.active_times),0) from wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid) activeTimes
+		FROM boss.boss_user bv
+		where 1=1
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		AND EXISTS (SELECT ta.userid FROM epglog.epgloga_${repMonth} ta	WHERE ta.userid = bv.userid )
+		AND EXISTS (SELECT up.userid FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+	  		AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND Date(up.begintime) &lt;= LAST_DAY(#{repDate}) )
+	</select>
+	
+	<!-- 更新:登录用户(未订) -->
+	<update id="update_OnlineUnbook">
+		UPDATE repm_vodarea r
+		SET r.online_unbook= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid) 
+			AND NOT EXISTS (
+				SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			) 
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = '${repDateMonthDesc}'
+	</update>
+	<!-- 查清单  -->
+	<select id="getOnlineUnbook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		,(select IFNULL(sum(e.login_times),0) from epglog.epgloga_${repMonth} e WHERE e.userid = bv.userid) onlineTimes
+		,(select IFNULL(sum(wn.active_times),0) from wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid) activeTimes
+		FROM boss.boss_user bv
+		where 1=1
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+  		and EXISTS (SELECT ta.userid FROM epglog.epgloga_${repMonth} ta WHERE ta.userid = bv.userid)
+		and NOT EXISTS  (SELECT up.userid FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate}) 	)
+	</select>
+	
+	<!-- 更新:未登录用户(订购)-->
+	<update id="update_OfflineBooked">
+		UPDATE repm_vodarea r
+		SET r.offline_booked= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE b.userstateid NOT IN (8058,8055)
+			AND <include refid="commonCondtion" />
+			AND EXISTS (
+				SELECT up.bookid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+			)
+			AND not EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid)
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = DATE_FORMAT(#{repDate},'%Y%m')
+	</update>
+	<!-- 查清单 -->	
+	<select id="getOfflineBooked" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		FROM boss.boss_user bv
+		WHERE bv.userstateid NOT IN (8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+  		AND EXISTS (
+			SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid IN (4217,4208)
+			AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND Date(up.begintime) &lt;= LAST_DAY(#{repDate})
+		)
+		AND NOT EXISTS (SELECT ta.userid FROM epglog.epgloga_${repMonth} ta WHERE ta.userid = bv.userid)
+	</select>
+	
+	<!-- 更新:未登录用户(未订)-->
+	<update id="update_OfflineUnbook">
+		UPDATE repm_vodarea r
+		SET r.offline_unbook= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE b.userstateid NOT IN (8058,8055)
+			AND <include refid="commonCondtion" />
+			AND NOT EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			)
+			AND EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid = 8120
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			)
+			AND not EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid)
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = DATE_FORMAT(#{repDate},'%Y%m')
+	</update>
+	<!-- 查清单 -->	
+	<select id="getOfflineUnbook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		FROM boss.boss_user bv
+		where bv.userstateid NOT IN (8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+	  	AND EXISTS (SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid= 8120  
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate}) )
+  		AND NOT EXISTS (SELECT up.userid FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+ 				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate}) )
+  		AND NOT EXISTS (SELECT ta.userid FROM epglog.epgloga_${repMonth} ta WHERE ta.userid = bv.userid )
+	</select>
+		
+	<!-- 更新:非活跃用户(登录过) -->
+	<update id="update_InactiveOnline">
+		UPDATE repm_vodarea r
+		SET r.inactive_online= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE b.userstateid NOT IN (8058,8055)
+			AND <include refid="commonCondtion" />
+			AND EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			)
+			AND not EXISTS (SELECT up.userid FROM wasulog.wasuna_${repDateMonthDesc} up WHERE up.userid = b.userid)
+			AND not EXISTS (SELECT we.userid FROM wasulog.wasue_${repDateMonthDesc} we WHERE we.userid = b.userid)
+			AND EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid)
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = DATE_FORMAT(#{repDate},'%Y%m')
+	</update>
+	<!-- 查清单 -->
+	<select id="getInactiveOnline" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		,(select IFNULL(sum(e.login_times),0) from epglog.epgloga_${repMonth} e WHERE e.userid = bv.userid) onlineTimes
+		FROM boss.boss_user bv
+		where bv.userstateid NOT IN (8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+  		AND EXISTS ( SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+		)
+		AND not EXISTS ( SELECT wn.userid FROM wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid )
+		AND not EXISTS ( SELECT we.userid FROM wasulog.wasue_${repMonth} we WHERE we.userid = bv.userid )
+		AND EXISTS ( SELECT ta.userid FROM epglog.epgloga_${repMonth} ta WHERE ta.userid = bv.userid )
+	</select>
+
+	<!-- 更新:非活跃用户(未登录过) -->
+	<update id="update_InactiveOffline">
+		UPDATE repm_vodarea r
+		SET r.inactive_offline= (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE b.userstateid NOT IN (8058,8055)
+			AND <include refid="commonCondtion" />
+			AND EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			)
+			AND not EXISTS (SELECT up.userid FROM wasulog.wasuna_${repDateMonthDesc} up WHERE up.userid = b.userid)
+			AND not EXISTS (SELECT we.userid FROM wasulog.wasue_${repDateMonthDesc} we WHERE we.userid = b.userid)
+			AND not EXISTS (SELECT up.userid FROM epglog.epgloga_${repDateMonthDesc} up WHERE up.userid = b.userid)
+		) where DATE_FORMAT(r.rep_date,'%Y%m') = DATE_FORMAT(#{repDate},'%Y%m')
+	</update>
+	<!-- 查清单 -->
+	<select id="getInactiveOffline" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid and upd.productId in (4217,4208) ) maxEndTime
+		FROM boss.boss_user bv
+		where bv.userstateid NOT IN (8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+  		AND EXISTS (
+				SELECT up.userid FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid IN (4217,4208)
+				AND up.endtime &gt;= concat(DATE_FORMAT(#{repDate},'%Y%m') , '01') AND up.begintime &lt;= LAST_DAY(#{repDate})
+			)
+		AND not EXISTS (SELECT wn.userid FROM wasulog.wasuna_${repMonth} wn WHERE wn.userid = bv.userid )
+		AND not EXISTS (SELECT we.userid FROM wasulog.wasue_${repMonth} we WHERE we.userid = bv.userid )
+		AND not EXISTS (SELECT ta.userid FROM epglog.epgloga_${repMonth} ta WHERE ta.userid = bv.userid )
+	</select>
+	
+	
+	<!-- ////////////////////////////////////////// -->
+	<!-- 以下是点播续费率相关字段的更新与查询 -->
+	<sql id="BookRate_updateCommon">
+		AND b.crtime &lt; DATE_ADD(DATE(#{repDate}),INTERVAL 1 DAY )
+		AND b.userstateid not in(8058,8055)
+	</sql>
+	<sql id="BookRate_getCommon">
+		AND DATE(bv.crtime) &lt;= #{repDate2}
+		AND bv.userstateid not in(8058,8055)
+	</sql>
+	<sql id="selectBookId">
+		SELECT up.bookid FROM boss.boss_userproduct up WHERE up.userid = b.userid 
+	</sql>
+	<sql id="selectBookIdv">
+		SELECT up.bookid FROM boss.boss_userproduct up WHERE up.userid = bv.userid 
+	</sql>
+	
+	<!-- 更新用户类型到期 -->
+	<update id="update_UserTypeExpiring" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_EXPIRING = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			<include refid="BookRate_updateCommon" />
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+			</if>
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+			</if>
+			AND EXISTS (<!-- 在这段时间内到期 -->
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.endtime) &lt;= #{repDate2}
+			)
+			AND NOT EXISTS ( <!-- 在这段时间前没有订购过结束时间大于这段时间的 -->
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate2}) AND Date(up.crtime) &lt; #{repDate1}
+			)
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypeExpiring" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid 
+		<if test="getWhat == 'getVodExpiring'">
+			AND upd.productid IN (4217,4208)
+		</if>
+		) maxEndTime
+		FROM boss.boss_user bv
+		WHERE 1=1 <include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		<include refid="BookRate_getCommon" />
+		<if test="getWhat == 'getVodExpiring'">
+			AND bv.userTypeId = 1051
+		</if>
+		<if test="getWhat == 'getBbExpiring'">
+			AND bv.userTypeId = 5064
+		</if>
+		AND EXISTS (<!-- 在这段时间内到期 -->
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiring'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.endtime) &lt;= #{repDate2}
+		)
+		AND NOT EXISTS ( <!-- 在这段时间前没有订购过结束时间大于这段时间的 -->
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiring'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= Date(#{repDate2}) AND Date(up.crtime) &lt; #{repDate1}
+		)
+	</select>
+	
+	<!-- 更新用户类型到期续费的 -->
+	<update id="update_UserTypeExpiringBook" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_EXPIRING_BOOK = (
+			SELECT COUNT(*) FROM boss.boss_user b
+			WHERE <include refid="commonCondtion" />
+			<include refid="BookRate_updateCommon" />
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+			</if>
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+			</if>
+			AND EXISTS (<!-- 在这段时间内到期 -->
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.endtime) &lt;= #{repDate2}
+			)
+			AND EXISTS (
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt; Date(#{repDate2}) AND up.crtime &gt;= Date(#{repDate1}) AND Date(up.crtime) &lt;= #{repDate2}
+			)
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypeExpiringBook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid 
+		<if test="getWhat == 'getVodExpiringBook'">
+			AND upd.productid IN (4217,4208)
+		</if>
+		) maxEndTime
+		FROM boss.boss_user bv
+		WHERE 1=1 <include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		<include refid="BookRate_getCommon" />
+		<if test="getWhat == 'getVodExpiringBook'">
+			AND bv.userTypeId = 1051
+		</if>
+		<if test="getWhat == 'getBbExpiringBook'">
+			AND bv.userTypeId = 5064
+		</if>
+		AND EXISTS (<!-- 在这段时间内到期 -->
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiringBook'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.endtime) &lt;= #{repDate2}
+		)
+		AND EXISTS (
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiringBook'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt; Date(#{repDate2}) AND up.crtime &gt;= Date(#{repDate1}) AND Date(up.crtime) &lt;= #{repDate2}
+		)
+	</select>
+	
+	
+	<!-- 更新离线或未订购续费用户(激活数) -->
+	<update id="update_UserTypeExpiredBook" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_EXPIRED_BOOK = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			<include refid="BookRate_updateCommon" />
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+			</if>
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+			</if>
+			AND NOT EXISTS (
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate1}) AND up.crtime &lt; Date(#{repDate1})
+			)
+			AND EXISTS (
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.endtime &gt;= Date(#{repDate1}) AND up.crtime &gt;= Date(#{repDate1})
+			)
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypeExpiredBook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid 
+		<if test="getWhat == 'getVodExpiringBook'">
+			AND upd.productid IN (4217,4208)
+		</if>
+		) maxEndTime
+		FROM boss.boss_user bv
+		WHERE 1=1 <include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		<include refid="BookRate_getCommon" />
+		<if test="getWhat == 'getVodExpiredBook'">
+			AND bv.userTypeId = 1051
+		</if>
+		<if test="getWhat == 'getBbExpiredBook'">
+			AND bv.userTypeId = 5064
+		</if>
+		AND NOT EXISTS (
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiredBook'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= Date(#{repDate1}) AND up.crtime &lt; Date(#{repDate1})
+		)
+		AND EXISTS (
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodExpiredBook'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.endtime &gt;= Date(#{repDate1}) AND up.crtime &gt;= Date(#{repDate1})
+		)
+	</select>
+	
+	<!-- 更新:提前订购的 -->
+	<update id="update_UserTypePreBook" >
+		UPDATE repm_vodarea r
+		SET r.${userType}_PREBOOK = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			<include refid="BookRate_updateCommon" />
+			<if test="userType == 'VOD'">
+				AND b.userTypeId = 1051
+			</if>
+			<if test="userType == 'BB'">
+				AND b.userTypeId = 5064
+			</if>
+			AND EXISTS (
+				<include refid="selectBookId" />
+				<if test="userType == 'VOD'">
+					AND up.productid IN (4217,4208)
+				</if>
+				AND up.crtime &gt;= Date(#{repDate1}) AND Date(up.crtime) &lt;= #{repDate2} 
+				AND Date(up.begintime) &gt; DATE_ADD(Date(#{repDate2}),INTERVAL 1 DAY )
+			)
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	<!-- 查清单  -->
+	<select id="getUserTypePreBook" resultMap="com.ndtv.vodstat.report.dao.BossUserInfoMap" parameterType="areaCondition">
+		SELECT <include refid="userInfoBasicColumn" />
+		,(select max(endTime) from boss.boss_userproduct upd where upd.userid = bv.userid 
+		<if test="getWhat == 'getVodExpiringBook'">
+			AND upd.productid IN (4217,4208)
+		</if>
+		) maxEndTime
+		FROM boss.boss_user bv
+		WHERE 1=1 <include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		<if test="getWhat == 'getVodPreBook'">
+			AND bv.userTypeId = 1051
+		</if>
+		<if test="getWhat == 'getBbPreBook'">
+			AND bv.userTypeId = 5064
+		</if>
+		AND EXISTS (
+			<include refid="selectBookIdv" />
+			<if test="getWhat == 'getVodPreBook'">
+				AND up.productid IN (4217,4208)
+			</if>
+			AND up.crtime &gt;= Date(#{repDate1}) AND Date(up.crtime) &lt;= #{repDate2} 
+			AND Date(up.begintime) &gt; DATE_ADD(Date(#{repDate2}),INTERVAL 1 DAY )
+		)
+	</select>
+	
+	
+	
+	
+	
+</mapper>

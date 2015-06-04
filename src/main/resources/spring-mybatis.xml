@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:c="http://www.springframework.org/schema/c" xmlns:cache="http://www.springframework.org/schema/cache" xmlns:context="http://www.springframework.org/schema/context" xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:lang="http://www.springframework.org/schema/lang" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p" xmlns:task="http://www.springframework.org/schema/task" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<!-- myBatis配置：本地 -->
+	<bean id="sqlSessionFactoryMybatis" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <!-- mapper和resultmap配置路径 -->
+        <property name="mapperLocations">
+            <list>
+                <!-- 表示在com.hoo目录下的任意包下的resultmap包目录中，以-resultmap.xml或-mapper.xml结尾所有文件
+                <value>classpath:com/hoo/framework/mybatis/mybatis-common.xml</value>
+                <value>classpath:com/hoo/**/resultmap/*-resultmap.xml</value>
+                <value>classpath:com/hoo/**/mapper/*-mapper.xml</value>
+                <value>classpath:com/hoo/**/mapper/**/*-mapper.xml</value>
+                
+                <value>classpath:com/ndtv/vodstat/**/mapping/*-resultmap.xml</value>
+                <value>classpath:com/ndtv/vodstat/**/mapping/*-mapper.xml</value>
+				 -->
+                 
+                <value>classpath:mybatis/*-resultmap.xml</value>
+                <value>classpath:mybatis/*-mapper.xml</value>
+                <value>classpath:mybatis/*Mapper.xml</value>
+            </list>
+        </property>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ndtv.vodstat.report" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryMybatis" />
+        <property name="markerInterface" value="com.ndtv.vodstat.report.dao.MybatisSuperMapper"/>
+	</bean>
+	
+	
+	<!-- myBatis配置：BOSS -->
+	<bean id="sqlSessionFactoryMybatisBoss" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dsBOSS"/>
+        <property name="configLocation" value="classpath:boss/mybatis-config-boss.xml"/>
+       <!--  mapper和resultmap配置路径 -->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:boss/*-resultmap.xml</value>
+                <value>classpath:boss/*-mapper.xml</value>
+            </list>
+        </property>
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ndtv.vodstat.boss" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryMybatisBoss" />
+        <property name="markerInterface" value="com.ndtv.vodstat.boss.dao.BossMybatisSuperMapper"/>
+	</bean>
+
+
+	<!--
+	<bean id="sqlSessionMybatis" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactoryMybatis" />
+	</bean>
+	-->
+
+	<!-- 以下是mybatis的事务配置,经测试,需要在web.xml中配置OpenSessionInViewFilter -->
+	
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManagerMybatis" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 注解方式配置事物 -->
+	<!-- <tx:annotation-driven transaction-manager="transactionManagerMybatis" /> -->
+
+	<!--拦截器方式配置事物 -->
+	<tx:advice id="transactionAdviceMybatis" transaction-manager="transactionManagerMybatis">
+		<tx:attributes>
+			<tx:method name="gen*" propagation="REQUIRED" />
+			<tx:method name="kill*" propagation="REQUIRED" />
+			<tx:method name="syn*" propagation="REQUIRED" />
+			<tx:method name="get*" propagation="SUPPORTS"  read-only="true"/>
+			<tx:method name="find*" propagation="SUPPORTS"  read-only="true"/>
+			<tx:method name="*" propagation="SUPPORTS" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="transactionPointcutMybatis" expression="execution(* com.ndtv.vodstat.report.service..*Impl.*(..))" />
+		<aop:advisor pointcut-ref="transactionPointcutMybatis" advice-ref="transactionAdviceMybatis" />
+	</aop:config>	
+	 
+	  
+</beans>

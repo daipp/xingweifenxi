@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.ndtv.vodstat.report.dao">
+	<!-- 返回结果 -->
+	<resultMap id="areaResultMap" type="com.ndtv.vodstat.report.model.VodArea">
+	    <result column="ID" property="id" jdbcType="DECIMAL" />
+	    
+		<result column="REP_DATE" property="repDate" jdbcType="DATE" />
+		<result column="TOWN" property="town" jdbcType="VARCHAR" />
+	    <result column="COMMUNITY" property="community" jdbcType="VARCHAR" />
+	    <result column="VILLAGE" property="village" jdbcType="VARCHAR" />
+	    <result column="CUSTOMERTYPE" property="customerType" jdbcType="VARCHAR" />
+	    
+    	<result column="TOWNID" property="townId" jdbcType="DECIMAL" />
+	    <result column="COMMUNITYID" property="communityId" jdbcType="DECIMAL" />
+	    <result column="VILLAGEID" property="villageId" jdbcType="DECIMAL" />
+	    <result column="CUSTOMERTYPEID" property="customerTypeId" jdbcType="DECIMAL" />
+    	
+	    <result column="CUSTOMERS" property="customers" jdbcType="DECIMAL" />
+	    <result column="DVB_USERS" property="dvbUsers" jdbcType="DECIMAL" />
+	    <result column="BB_USERS" property="bbUsers" jdbcType="DECIMAL" />
+	    <result column="VOD_USERS" property="vodUsers" jdbcType="DECIMAL" />
+	    <result column="HDSTBS" property="hdstbs" jdbcType="DECIMAL" />
+	    <result column="BOOK_USERS" property="bookUsers" jdbcType="DECIMAL" />
+	    <result column="EXPIRED_USERS" property="expiredUsers" jdbcType="DECIMAL"/>
+	    <result column="ACTIVE_USERS" property="activeUsers" jdbcType="DECIMAL" />
+	    <result column="ONLINE_BOOKED_USERS" property="onlineBookedUsers" jdbcType="DECIMAL" />
+	    <result column="ONLINE_UNBOOK_USERS" property="onlineUnbookUsers" jdbcType="DECIMAL" />
+	    
+	    <result column="OFFLINE_BOOKED_USERS" property="offlineBookedUsers" jdbcType="DECIMAL" />
+	    <result column="OFFLINE_UNBOOK_USERS" property="offlineUnbookUsers" jdbcType="DECIMAL" />
+	    
+	    <result column="INACTIVE_ONLINE_USERS" property="inactiveOnlineUsers" jdbcType="DECIMAL" />
+	    <result column="INACTIVE_OFFLINE_USERS" property="inactiveOfflineUsers" jdbcType="DECIMAL" />
+	    
+	    
+	    <result column="REPORT_RANGE" property="reportRange" jdbcType="VARCHAR" />
+	    <result column="NEW_DVB_USERS" property="newDvbUsers" jdbcType="DECIMAL" />
+	    <result column="NEW_VOD_USERS" property="newVodUsers" jdbcType="DECIMAL" />
+	    <result column="NEW_BB_USERS" property="newBbUsers" jdbcType="DECIMAL" />
+	    
+	    <result column="ONLINE_VOD_USERS" property="onlineVodUsers" jdbcType="DECIMAL" />
+	    <result column="ONLINE_BB_USERS" property="onlineBbUsers" jdbcType="DECIMAL" />
+	    <result column="NEW_ONLINE_VOD_USERS" property="newOnlineVodUsers" jdbcType="DECIMAL" />
+	    <result column="NEW_ONLINE_BB_USERS" property="newOnlineBbUsers" jdbcType="DECIMAL" />
+	    <result column="OFFLINE_VOD_USERS" property="offlineVodUsers" jdbcType="DECIMAL" />
+	    <result column="OFFLINE_BB_USERS" property="offlineBbUsers" jdbcType="DECIMAL" />
+	    
+	   
+	    <result column="VODOPENNOWUSERS" property="vodOpenNowUsers" jdbcType="DECIMAL" />
+	    <result column="VODOPENDELAYUSERS" property="vodOpenDelayUsers" jdbcType="DECIMAL" />
+	    <result column="VODNOTOPENUSERS" property="vodNotOpenUsers" jdbcType="DECIMAL" />
+	    <result column="BBOPENNOWUSERS" property="bbOpenNowUsers" jdbcType="DECIMAL" />
+	    <result column="BBOPENDELAYUSERS" property="bbOpenDelayUsers" jdbcType="DECIMAL" />
+	    <result column="BBNOTOPENUSERS" property="bbNotOpenUsers" jdbcType="DECIMAL" />
+		
+		<result column="VOD_OFFLINE_BOOKUSERS" property="vodOfflineBookUsers" jdbcType="DECIMAL" />
+		<result column="VOD_EXPIRED_BOOKUSERS" property="vodExpiredBookUsers" jdbcType="DECIMAL" />
+		<result column="VOD_UNEXPIRED_BOOKUSERS" property="vodUnExpiredBookUsers" jdbcType="DECIMAL" />
+		<result column="BB_OFFLINE_BOOKUSERS" property="bbOfflineBookUsers" jdbcType="DECIMAL" />
+		<result column="BB_EXPIRED_BOOKUSERS" property="bbExpiredBookUsers" jdbcType="DECIMAL" />
+		<result column="BB_UNEXPIRED_BOOKUSERS" property="bbUnExpiredBookUsers" jdbcType="DECIMAL" />
+		<!-- <result column="clickTimes" property="clickTimes" jdbcType="DECIMAL" />
+		<result column="userId" property="userId" jdbcType="DECIMAL" />
+		<result column="fullAddress" property="fullAddress" jdbcType="VARCHAR" />
+		<result column="customername" property="customername" jdbcType="VARCHAR" />
+		<result column="film_name" property="filmname" jdbcType="VARCHAR" />
+		<result column="catergory" property="catergory" jdbcType="VARCHAR" /> -->
+		
+	</resultMap>
+	
+	<!-- BOSS用户信息  -->
+	<resultMap id="BossUserInfoMap" type="com.ndtv.vodstat.report.model.BossUserInfo">
+		<result column="userId" property="userId" jdbcType="DECIMAL" />
+	    <result column="customerName" property="customerName" jdbcType="VARCHAR" />
+	    <result column="crTime" property="crTime" jdbcType="TIMESTAMP" />
+	    
+	    <result column="shop" property="shop" jdbcType="VARCHAR" />
+	    <result column="town" property="town" jdbcType="VARCHAR" />
+	    <result column="community" property="community" jdbcType="VARCHAR" />
+	    <result column="village" property="village" jdbcType="VARCHAR" />
+	    <result column="userType" property="userType" jdbcType="VARCHAR" />
+	    <result column="userGroup" property="userGroup" jdbcType="VARCHAR" />
+	    <result column="userType" property="userType" jdbcType="VARCHAR" />
+	    <result column="userState" property="userState" jdbcType="VARCHAR" />
+	    <result column="stbType" property="stbType" jdbcType="VARCHAR" />
+	    <result column="stb" property="stb" jdbcType="VARCHAR" />
+	    
+	    <result column="shopId" property="shopId" jdbcType="DECIMAL" />
+	    <result column="townId" property="townId" jdbcType="DECIMAL" />
+	    <result column="communityId" property="communityId" jdbcType="DECIMAL" />
+	    <result column="villageId" property="villageId" jdbcType="DECIMAL" />
+	    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+	    
+	    <result column="phone" property="phone" jdbcType="VARCHAR" />
+	    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+	    <result column="simserialno" property="simserialNo" jdbcType="VARCHAR" />
+	    <result column="stbserialno" property="stbserialNo" jdbcType="VARCHAR" />
+	    <result column="stbType" property="stbType" jdbcType="VARCHAR" />
+	    <result column="stb" property="stb" jdbcType="VARCHAR" />
+	    
+	    <!-- 产品最大截止日期 -->
+	    <result column="maxEndTime" property="maxEndTime" jdbcType="TIMESTAMP" />
+	    <result column="maxBookTime" property="maxBookTime" jdbcType="TIMESTAMP" />
+	    
+	    <result column="userTypeId" property="userTypeId" jdbcType="DECIMAL" />
+	    <result column="userGroupId" property="userGroupId" jdbcType="DECIMAL" />
+	    <result column="userTypeId" property="userTypeId" jdbcType="DECIMAL" />
+	    <result column="userStateId" property="userStateId" jdbcType="DECIMAL" />
+	    <result column="onlineTimes" property="onlineTimes" jdbcType="DECIMAL" />
+	    <result column="activeTimes" property="activeTimes" jdbcType="DECIMAL" />
+	    
+	    <result column="bbUnExpiredUsers" property="bbUnExpiredUsers" jdbcType="DECIMAL" />
+	    <result column="bbExpiredUsers" property="bbExpiredUsers" jdbcType="DECIMAL" />
+	    <result column="bbExpiringUsers" property="bbExpiringUsers" jdbcType="DECIMAL" />
+	    <result column="vodUnExpiredUsers" property="vodUnExpiredUsers" jdbcType="DECIMAL" />
+	    <result column="vodExpiredUsers" property="vodExpiredUsers" jdbcType="DECIMAL" />
+	    <result column="vodExpiringUsers" property="vodExpiringUsers" jdbcType="DECIMAL" />
+	    
+	</resultMap>
+	
+	<!-- BOSS客户信息  -->
+	<resultMap id="BossCustomerInfoMap" type="com.ndtv.vodstat.report.model.BossCustomerInfo">
+	    <result column="serviceCardId" property="serviceCardId" jdbcType="DECIMAL" />
+		<result column="customerId" property="customerId" jdbcType="DECIMAL" />
+	    <result column="customerName" property="customerName" jdbcType="VARCHAR" />
+	    
+	    <result column="customerTypeId" property="customerTypeId" jdbcType="DECIMAL" />
+	    <result column="customerType" property="customerType" jdbcType="VARCHAR" />
+	   
+	    <result column="importanceLevelId" property="importanceLevelId" jdbcType="DECIMAL" />
+	    <result column="importanceLevel" property="importanceLevel" jdbcType="VARCHAR" />
+	    
+	    <result column="securityLevelId" property="securityLevelId" jdbcType="DECIMAL" />
+	    <result column="securityLevel" property="securityLevel" jdbcType="VARCHAR" />
+	    
+	    <result column="certificatetypeId" property="certificatetypeId" jdbcType="DECIMAL" />
+	    <result column="certificatetype" property="certificatetype" jdbcType="VARCHAR" />
+	    <result column="certificatecode" property="certificatecode" jdbcType="VARCHAR" />
+	    <result column="memo" property="memo" jdbcType="VARCHAR" />
+	    <result column="crTime" property="crTime" jdbcType="TIMESTAMP" />
+	    <result column="shopId" property="shopId" jdbcType="DECIMAL" />
+	    <result column="shop" property="shop" jdbcType="VARCHAR" />
+	    <result column="townId" property="townId" jdbcType="DECIMAL" />
+	    <result column="town" property="town" jdbcType="VARCHAR" />
+	    <result column="communityId" property="communityId" jdbcType="DECIMAL" />
+	    <result column="community" property="community" jdbcType="VARCHAR" />
+	   	<result column="villageId" property="villageId" jdbcType="DECIMAL" />
+	    <result column="village" property="village" jdbcType="VARCHAR" />
+	    <result column="fulladdress" property="fulladdress" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- 客户类型,行政区,社区,小区的条件组合  -->
+	<sql id="areaCondition" >
+		<if test="customerTypeIds != null and customerTypeIds.length > 0">
+  			and bv.customerTypeId in
+  			<foreach item="customerTypeId" index="index" collection="customerTypeIds" open="(" separator="," close=")">  
+			      #{customerTypeId}
+			</foreach>
+  		</if>
+  		<if test="townIds != null and townIds.length > 0">
+  			and bv.townId in
+  			<foreach item="townId" index="index" collection="townIds" open="(" separator="," close=")">  
+			      #{townId}
+			</foreach>
+  		</if>
+  		<if test="communityIds != null and communityIds.length > 0">
+  			and bv.communityId in
+  			<foreach item="communityId" index="index" collection="communityIds" open="(" separator="," close=")">  
+			      #{communityId}
+			</foreach>
+  		</if>
+  		<if test="villageIds != null and villageIds.length > 0">
+  			and bv.villageId in
+  			<foreach item="villageId" index="index" collection="villageIds" open="(" separator="," close=")">  
+			      #{villageId}
+			</foreach>
+  		</if>
+  	</sql>
+	
+	<!-- 客户类型,行政区,社区,小区的条件组合  -->
+	<sql id="vodAreaCondition" >
+		<if test="customerTypeIds != null and customerTypeIds.length > 0">
+  			and bv.customerTypeId in
+  			<foreach item="customerTypeId" index="index" collection="customerTypeIds" open="(" separator="," close=")">  
+			      #{customerTypeId}
+			</foreach>
+  		</if>
+  		<if test="townIds != null and townIds.length > 0">
+  			and bv.townId in
+  			<foreach item="townId" index="index" collection="townIds" open="(" separator="," close=")">  
+			      #{townId}
+			</foreach>
+  		</if>
+  		<if test="communityIds != null and communityIds.length > 0">
+  			and bv.communityId in
+  			<foreach item="communityId" index="index" collection="communityIds" open="(" separator="," close=")">  
+			      #{communityId}
+			</foreach>
+  		</if>
+  		<if test="villageIds != null and villageIds.length > 0">
+  			and bv.villageId in
+  			<foreach item="villageId" index="index" collection="villageIds" open="(" separator="," close=")">  
+			      #{villageId}
+			</foreach>
+  		</if>
+  	</sql>
+  	
+</mapper>

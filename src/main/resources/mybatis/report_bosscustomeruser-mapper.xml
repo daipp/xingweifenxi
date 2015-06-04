@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.BossCustmoerUserReportMapper">
+	
+	<sql id="ReportBOSSCustomerUser_BaseColumns">
+		ID, REP_DATE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID, 
+		REPORT_RANGE,CUSTOMERS,DVB_USERS,VOD_USERS,BB_USERS,NEW_DVB_USERS,NEW_VOD_USERS,NEW_BB_USERS,
+		ONLINE_VOD_USERS,ONLINE_BB_USERS,NEW_ONLINE_VOD_USERS,NEW_ONLINE_BB_USERS,OFFLINE_VOD_USERS,OFFLINE_BB_USERS
+	</sql>
+	
+	<sql id="selectColumn">
+		REPORT_RANGE,
+		<if test="showRepDate">
+			REP_DATE,
+		</if>
+		<if test="showCustomerType">
+			CUSTOMERTYPE,CUSTOMERTYPEID,
+		</if>
+		<if test="showTown">
+			TOWN,TOWNID,
+		</if>
+		<if test="showCommunity">
+			COMMUNITY, COMMUNITYID,
+		</if>
+		<if test="showVillage">
+			VILLAGE, VILLAGEID,
+		</if>
+	</sql>
+	
+	<sql id="groupbyColumn">
+		<trim prefix="group by " suffixOverrides="," >
+			<include refid="selectColumn" />
+		</trim>
+	</sql>
+	
+	<!-- 查询 -->
+	<select id="findReportBOSSCustomerUser" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		select 
+		<include refid="selectColumn" />
+		sum(CUSTOMERS) CUSTOMERS,
+		sum(DVB_USERS) DVB_USERS,
+		sum(BB_USERS) BB_USERS,
+		sum(VOD_USERS) VOD_USERS,
+		sum(NEW_DVB_USERS) NEW_DVB_USERS,
+		sum(NEW_VOD_USERS) NEW_VOD_USERS,
+		sum(NEW_BB_USERS) NEW_BB_USERS,
+		sum(ONLINE_VOD_USERS) ONLINE_VOD_USERS,
+		sum(ONLINE_BB_USERS) ONLINE_BB_USERS,
+		sum(NEW_ONLINE_VOD_USERS) NEW_ONLINE_VOD_USERS,
+		sum(NEW_ONLINE_BB_USERS) NEW_ONLINE_BB_USERS,
+		sum(OFFLINE_VOD_USERS) OFFLINE_VOD_USERS,
+		sum(OFFLINE_BB_USERS) OFFLINE_BB_USERS
+		from REP_BOSSCUSTOMERUSER bv
+		where bv.REPORT_RANGE = #{reportRange}
+  		<if test="repDate1 != null">
+  			<if test="repDate2 == null">
+  				and Date(REP_DATE) = Date(#{repDate1})
+  			</if>
+  			<if test="repDate2 != null">
+  				and REP_DATE between Date(#{repDate1}) and #{repDate2}
+  			</if>
+  		</if>
+	  	<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<include refid="groupbyColumn" />
+	</select>
+	
+	<!-- 查询指定日期的报表 -->
+	<select id="getReportBOSSCustomerUser"  resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT <include refid="ReportBOSSCustomerUser_BaseColumns" />
+		FROM REP_BOSSCUSTOMERUSER WHERE rep_date = DATE(#{repDate}) and report_range = #{reportRange}
+	</select>
+	
+	<!-- 删除报表 -->
+	<delete id="deleteReportBOSSCustomerUser" >
+		delete from rep_bosscustomeruser where DATE(rep_date) = DATE(#{repDate}) and report_range = #{reportRange}
+	</delete>
+	
+	<!-- 报表生成: 初始化各区域客户类型 -->
+	<insert id="insertReportBOSSCustomerUser"  flushCache="true">
+		INSERT INTO rep_bosscustomeruser(report_range,rep_date,
+			townid,communityid,villageid,customertypeid,town,community,village,customertype,
+			customers,dvb_users,vod_users,bb_users,new_dvb_users,new_vod_users,new_bb_users,
+			online_vod_users,online_bb_users,new_online_vod_users,new_online_bb_users,offline_vod_users,offline_bb_users)
+		
+		SELECT #{reportRange},DATE(#{repDate}),
+			townid,communityid,villageid,customertypeid,town,community,village,customertype,
+			-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+			FROM boss.boss_user 
+			GROUP BY townid,communityid,villageid,customertypeid,town,community,village,customertype
+			UNION
+			SELECT #{reportRange},DATE(#{repDate}),
+			townid,communityid,villageid,customertypeid,town,community,village,customertype,
+			-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+			FROM boss.boss_customer 
+			GROUP BY townid,communityid,villageid,customertypeid,town,community,village,customertype
+	</insert>
+	
+	<sql id="commonCondtion">
+		b.customertypeid = r.customertypeid
+		AND b.townid = r.townid
+		AND b.communityid = r.communityid
+		AND b.villageid = r.villageid
+	</sql>
+	
+	<!-- 更新客户数量 -->
+	<update id="update_Customers" >
+		UPDATE rep_bosscustomeruser r
+		SET r.customers = (
+			SELECT COUNT(*) FROM boss.boss_customer b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate}),INTERVAL 1 DAY )
+			AND EXISTS (SELECT * FROM boss.boss_user bu WHERE bu.customerid = b.customerid AND bu.userstateid not in(8058,8055) )
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	
+	<!-- 更新用户类型数量 -->
+	<update id="update_UserTypes" >
+		UPDATE rep_bosscustomeruser r
+		SET r.${userType} = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="userType == 'BB_USERS'">
+				AND b.userTypeId = 5064
+			</if>
+			<if test="userType == 'DVB_USERS'">
+				AND b.userTypeId = 1521
+			</if>
+			<if test="userType == 'VOD_USERS'">
+				AND b.userTypeId = 1051
+			</if>
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	
+	<!-- 更新在线用户类型数量 -->
+	<update id="update_OnlineUserTypes" >
+		UPDATE rep_bosscustomeruser r
+		SET r.ONLINE_${userType} = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="userType == 'BB_USERS'">
+				AND b.userTypeId = 5064
+				AND EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.begintime) &lt;= #{repDate2}
+				)
+			</if>
+			<if test="userType == 'DVB_USERS'"><!-- 不存在此条件 -->
+				AND b.userTypeId = 1521
+				AND EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.begintime) &lt;= #{repDate2}
+				)
+			</if>
+			<if test="userType == 'VOD_USERS'">
+				AND b.userTypeId = 1051
+				AND EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+					AND up.endtime &gt;= Date(#{repDate1}) AND Date(up.begintime) &lt;= #{repDate2}
+				)
+			</if>
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	
+	<!-- 更新离线用户类型数量 -->
+	<update id="update_OfflineUserTypes" >
+		UPDATE rep_bosscustomeruser r
+		SET r.OFFLINE_${userType} = (
+			SELECT COUNT(*) FROM boss.boss_user b 
+			WHERE <include refid="commonCondtion" />
+			AND b.crtime &lt; DATE_ADD(DATE(#{repDate}),INTERVAL 1 DAY )
+			AND b.userstateid not in(8058,8055)
+			<if test="userType == 'BB_USERS'">
+				AND b.userTypeId = 5064
+				AND NOT EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+			<if test="userType == 'DVB_USERS'"><!-- 不存在此条件 -->
+				AND b.userTypeId = 1521
+				AND NOT EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+			<if test="userType == 'VOD_USERS'">
+				AND b.userTypeId = 1051
+				AND NOT EXISTS (
+					SELECT * FROM boss.boss_userproduct up WHERE up.userid = b.userid AND up.productid IN (4217,4208)
+					AND up.endtime &gt;= DATE(#{repDate}) AND up.begintime &lt;= DATE(#{repDate})
+				)
+			</if>
+		) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	
+	
+	<sql id="midTab">
+		select REP_DATE,REPORT_RANGE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID,
+		DVB_USERS,VOD_USERS,BB_USERS,ONLINE_VOD_USERS,ONLINE_BB_USERS
+		from  rep_bosscustomeruser
+	</sql>
+	
+	<!-- 更新净增用户类型数量 -->
+	<update id="update_NewUserTypes" >
+		UPDATE rep_bosscustomeruser r
+		SET r.NEW_${userType} = r.${userType} - IFNULL((
+			SELECT b.${userType} FROM (<include refid="midTab" />) b 
+			WHERE <include refid="commonCondtion" />
+			AND b.report_range = #{reportRange}
+			AND b.rep_date = #{repDateLast}
+		),0) where rep_date = DATE(#{repDate}) and report_range = #{reportRange}
+	</update>
+	
+	<!-- 更新净增在线用户类型数量 -->
+	<update id="update_NewOnlineUserTypes" >
+		UPDATE rep_bosscustomeruser r
+		SET r.NEW_ONLINE_${userType} = r.ONLINE_${userType} - IFNULL((
+			SELECT b.ONLINE_${userType} FROM (<include refid="midTab" />) b 
+			WHERE <include refid="commonCondtion" />
+			AND b.report_range = #{reportRange}
+			AND b.rep_date = #{repDateLast}
+		),0) where r.rep_date = DATE(#{repDate}) and r.report_range = #{reportRange}
+	</update>
+	
+	
+</mapper>

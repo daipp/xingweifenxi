@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.BossSysCodeMapper">
+	<resultMap id="BossSysCodeMap" type="com.ndtv.vodstat.report.model.BossSysCode">
+		<result column="typeId" property="typeId" jdbcType="DECIMAL" />
+	    <result column="codeId" property="codeId" jdbcType="DECIMAL" />
+	    <result column="state" property="state" jdbcType="DECIMAL" />
+	    
+	    <result column="codeName" property="codeName" jdbcType="VARCHAR" />    
+	    <result column="codeContent" property="codeContent" jdbcType="VARCHAR" />
+	    <result column="memo" property="memo" jdbcType="VARCHAR" />
+	    <result column="typeName" property="typeName" jdbcType="VARCHAR" />
+	    
+	    <result column="crtime" property="crtime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		codeId, codeContent,codeName
+	</sql>
+	<sql id="Full_Column_List">
+		codeId, codeContent,codeName,typeId,state,memo,crtime
+	</sql>	
+	
+	<!-- 获取单个BOSS系统代码 -->
+	<select id="getBossSysCode" resultMap="BossSysCodeMap">
+		select
+		<include refid="Full_Column_List" />
+		from boss.boss_syscode
+		<choose>
+			<when test="codeid gt 0">
+				where codeid = #{codeid} 
+			</when>
+			<when test="codename != null and typeid > 0 ">
+				where typeid = #{typeid} and codename = #{codename}
+			</when>
+		</choose>
+	</select>
+	
+	<!-- 获取一个类别下的BOSS系统代码  -->
+	<select id="getCodeList" resultMap="BossSysCodeMap">
+		select
+		<include refid="Base_Column_List" />
+		from boss.boss_syscode
+		where typeid = #{typeid} 
+		and (state= #{state} or -1= #{state})
+		order by state desc,codename asc
+	</select>
+	
+	<!-- 获取有关联的BOSS系统代码 -->
+	<select id="getCodeListByRelation" resultMap="BossSysCodeMap">
+		SELECT  s.codeId, s.codeContent,s.codeName,s.state,s.typeid
+		FROM boss.boss_syscode s
+		JOIN boss.boss_syscode_syscode ss ON ss.codeid = s.codeid AND ss.codeidex = #{codeid}
+		WHERE s.typeid = #{typeid}
+		AND (s.state= #{state} OR -1= #{state})
+		UNION
+		SELECT  s.codeId, s.codeContent,s.codeName,s.state,s.typeid
+		FROM boss.boss_syscode s
+		JOIN boss.boss_syscode_syscode ss ON ss.codeidex = s.codeid AND ss.codeid = #{codeid}
+		WHERE s.typeid = #{typeid}
+		AND (s.state= #{state} OR -1= #{state})
+		ORDER BY state DESC,codename ASC
+	</select>
+	
+	<!-- 获取与本系统操作员有关联的BOSS系统代码  -->
+	<select id="getCodeListBySysUser" resultMap="BossSysCodeMap">
+		SELECT  s.codeId, s.codeContent,s.codeName,s.state,s.typeid      
+		FROM boss.boss_syscode s
+		JOIN sys_user_bosssyscode ss ON ss.codeid = s.codeid and ss.userid = #{userid}
+		where s.typeid = #{typeid}
+		<if test="state==1 or state==0 ">
+			AND s.state = #{state}
+		</if>
+	</select>
+	
+	<!-- 获取与本系统操作员无关的BOSS系统代码  -->
+	<select id="getCodeListBySysUserEx" resultMap="BossSysCodeMap">
+		SELECT  s.codeId, s.codeContent,s.codeName,s.state,s.typeid      
+		FROM boss.boss_syscode s
+		where s.typeid = #{typeid}
+		AND s.codeid not in ( select ss.codeid from sys_user_bosssyscode ss where ss.userid = #{userid} )
+		<if test="state==1 or state==0 ">
+			AND s.state = #{state}
+		</if>
+	</select>
+	
+	<!-- 删除与本系统操作员有关的BOSS系统代码  -->
+	<delete id="cleanSysUserBossSysCode" flushCache="true">
+  		delete from sys_user_bosssyscode where userid = #{userid}
+  		AND codeid in (select codeid from boss.boss_syscode where typeid = #{typeid})
+	</delete>
+	
+	<!-- 添加本系统操作员与BOSS系统代码的关联  -->
+	<insert id="addSysUserBossSysCode" flushCache="true">
+		insert into sys_user_bosssyscode(userid,codeid) values
+		<foreach item="codeid" index="index" collection="codeids" separator=",">  
+			(#{userid},#{codeid})
+		</foreach>
+	</insert>
+	
+
+</mapper>

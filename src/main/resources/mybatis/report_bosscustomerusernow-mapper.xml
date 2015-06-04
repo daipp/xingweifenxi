@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.CustomerUserNowReportMapper">
+	<sql id="selectColumn"> 
+		<if test="showCustomerType">
+			CUSTOMERTYPE,CUSTOMERTYPEID,
+		</if>
+		<if test="showTown">
+			TOWN,TOWNID,
+		</if>
+		<if test="showCommunity">
+			COMMUNITY, COMMUNITYID,
+		</if>
+		<if test="showVillage">
+			VILLAGE, VILLAGEID,
+		</if>
+	</sql>
+	
+	<sql id="groupbyColumn">
+		<trim prefix="group by " suffixOverrides="," >
+			<include refid="selectColumn" />
+		</trim>
+	</sql>
+	
+	
+	<!-- 点播立即开通 -->
+	<select id="countVodOpenNowUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) VODOPENNOWUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+  		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND DATE(up.begintime) = DATE(bv.crtime)
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 点播延期开通 -->
+	<select id="countVodOpenDelayUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) VODOPENDELAYUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND DATE(up.begintime) = DATE(bv.crtime)
+  		)
+  		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND DATE(up.begintime) &gt; DATE(bv.crtime)
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+	
+ 	<!-- 点播未开通 -->
+	<select id="countVodNotOpenUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) VODNOTOPENUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.usertypeid = 1051 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217)
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+	
+	
+ 	<!-- 宽带立即开通 -->
+	<select id="countbbOpenNowUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) BBOPENNOWUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.usertypeid = 5064 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid AND DATE(up.begintime) = DATE(bv.crtime)
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 宽带延期开通 -->
+	<select id="countbbOpenDelayUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) BBOPENDELAYUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.usertypeid = 5064 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid AND DATE(up.begintime) = DATE(bv.crtime)
+  		)
+  		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid AND DATE(up.begintime) &gt; DATE(bv.crtime)
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+	
+ 	<!-- 宽带未开通 -->
+	<select id="countbbNotOpenUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) BBNOTOPENUSERS
+		FROM boss.boss_user bv
+		WHERE 1=1 AND bv.usertypeid = 5064 AND bv.userstateid not in(8058,8055)
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="repDate1 != null">
+	  		<if test="repDate2 == null">
+	  				AND Date(bv.crtime) = Date(#{repDate1})
+	  		</if>
+	  		<if test="repDate2 != null">
+	  				AND Date(bv.crtime) &gt;= Date(#{repDate1}) AND DATE(bv.crtime) &lt;= Date(#{repDate2})
+	  		</if>
+	  	</if>
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid
+  		)
+  		<include refid="groupbyColumn" />
+	</select>
+	
+	
+</mapper>

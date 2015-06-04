@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.SysCodeMapper" >
+
+  <resultMap id="SysCodeMap" type="com.ndtv.vodstat.sys.entity.SysCode" >
+  	<id column="ID"  property="id" />
+    <result column="CODE_NAME" property="codeName" jdbcType="VARCHAR" />
+    <result column="CODE_CONTENT" property="codeContent" jdbcType="VARCHAR" />
+    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="BIGINT" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_USER_ID" property="updateUserId" jdbcType="BIGINT" />
+    <result column="TYPE_ID" property="typeId" jdbcType="BIGINT" />
+  </resultMap>
+
+	<!-- 获取单个系统代码 -->
+	<select id="get" resultMap="SysCodeMap">
+		select ID,CODE_NAME,CODE_CONTENT,MEMO,STATUS,UPDATE_TIME,UPDATE_USER_ID,TYPE_ID
+		from SYS_CODE where ID = #{codeid} 
+	</select>
+	
+	<!-- 修改系统代码 -->
+	<update id="update" parameterType="com.ndtv.vodstat.sys.entity.SysCode">
+		update SYS_CODE
+	    <set>
+	      <if test="codeName != null">CODE_NAME=#{codeName},</if>
+	      <if test="codeContent != null">CODE_CONTENT='${codeContent}',</if>
+	      <if test="memo != null">MEMO=#{memo},</if>
+	      <if test="status != null">STATUS=#{status},</if>
+	      <if test="updateTime != null">UPDATE_TIME=#{updateTime},</if>
+	      <if test="updateUserId != null">UPDATE_USER_ID=${updateUserId}</if>
+	    </set>
+		where id=${id}
+	</update>
+	
+</mapper>

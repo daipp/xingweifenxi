@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.VodLogsMapper">
+	<resultMap id="EpgLog" type="com.ndtv.vodstat.report.model.EpgLog">
+		<result column="userId" property="userId" jdbcType="DECIMAL" />
+	    <result column="resno" property="resno" jdbcType="VARCHAR" />
+	    <result column="logTime" property="logTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<resultMap id="WasunLog" type="com.ndtv.vodstat.report.model.WasunLog">
+		<result column="userId" property="userId" jdbcType="DECIMAL" />
+		<result column="begin_date" property="beginTime" jdbcType="TIMESTAMP" />
+		<result column="end_date" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="ppv_id" property="ppvId" jdbcType="VARCHAR" />
+		<result column="billing_no" property="billingNo" jdbcType="VARCHAR" />
+		<result column="film_name" property="filmName" jdbcType="VARCHAR" />
+		<result column="fee" property="fee" jdbcType="VARCHAR" />
+		<result column="display_path" property="displayPath" jdbcType="VARCHAR" />
+		<result column="subscriber_code" property="subscriberCode" jdbcType="VARCHAR" />
+		<result column="catergory" property="catergory" jdbcType="VARCHAR" />
+		<result column="times" property="times" jdbcType="DECIMAL" />
+	</resultMap>
+	<select id="getLastTabOfEpglog" resultType="java.lang.String">
+		SELECT max(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'vodstat' and table_name like 'epglog%'
+	</select>
+	
+	<select id="getLastLogtimeOfEpglog" resultType="java.util.Date" parameterType="java.lang.String">
+		SELECT max(logtime) FROM ${tabName}
+	</select>
+	
+	<insert id="batchInsertEpgLog">
+		insert into epglog.epglog_${theMonth} (logTime, resno)
+	    values
+	    <foreach collection="logs" item="item" index="index" separator="," >(#{item.logTime}, #{item.resno})</foreach>
+	</insert>
+	
+	<update id="updateEpglogByResno">
+		UPDATE epglog.epglog_${theMonth} e SET e.userid = (SELECT max(u.userid) FROM boss.boss_user u WHERE u.resno = e.resno and length(u.simserialno)=16) 
+		WHERE LENGTH(e.resno) > 8 AND e.userid IS NULL
+		AND DATE(e.logtime) = #{logDate}
+	</update>
+	
+	<update id="updateEpglogByShortSim">
+		UPDATE epglog.epglog_${theMonth} e SET e.userid = (SELECT max(u.userid) FROM boss.boss_user u WHERE u.shortsim = e.resno and length(u.simserialno)=16) 
+		WHERE LENGTH(e.resno) = 8 AND e.userid IS NULL
+		AND DATE(e.logtime) = #{logDate}
+	</update>
+	
+	<insert id="batchInsertEpgLogA">
+		INSERT INTO epglog.epgloga_${theMonth}(userid,logtime,login_times)
+		SELECT userid,DATE(logtime),COUNT(userid)
+		FROM epglog.epglog_${theMonth}
+		WHERE DATE(logtime) = #{logDate}
+		<!-- NOT EXISTS (SELECT userid FROM epgloga_${theMonth} b WHERE a.`userid` = b.`userid` AND DATE(a.logtime) = b.`logtime`) -->
+		GROUP BY userid, DATE(logtime)
+	</insert>
+	
+	
+	<select id="getSelectEpglog" resultMap="EpgLog" parameterType="com.ndtv.vodstat.report.model.EpgLog"> 
+		<if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT * FROM epglog.epglog_${queryMonthParam} wn WHERE wn.userid = ${userId}
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= Date(#{repDate2})
+				order by wn.logtime
+  		</if>
+		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT * FROM epglog.epglog_${item} wn WHERE wn.userid = ${userId}
+							and wn.logtime &gt;= Date(#{repDate1})
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION
+						SELECT * FROM epglog.epglog_${item} wn WHERE wn.userid = ${userId}
+							and Date(wn.logtime) &lt;=Date(#{repDate2})
+					</when>
+					<otherwise>
+						UNION 
+						SELECT * FROM epglog.epglog_${item} wn WHERE wn.userid = ${userId}
+					</otherwise>
+				</choose>
+			</foreach>
+			order by logtime
+		</if>
+	</select>
+	
+	<select id="getSelectWasunlog" resultMap="WasunLog" parameterType="com.ndtv.vodstat.report.model.WasunLog"> 
+	   <if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT * FROM wasulog.wasun_${queryMonthParam} wn WHERE wn.userid = ${userId}
+				and wn.begin_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= Date(#{repDate2})
+				order by wn.begin_date
+  		</if>
+  		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT * FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId}
+							and wn.begin_date &gt;= Date(#{repDate1})
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION
+						SELECT * FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId}
+							and Date(wn.begin_date) &lt;=Date(#{repDate2})
+					</when>
+					<otherwise>
+						UNION 
+						SELECT * FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId}
+					</otherwise>
+				</choose>
+			</foreach>
+			order by begin_date
+		</if>
+	</select>
+	
+	<select id="getCatergoryFrequency" resultMap="WasunLog" parameterType="com.ndtv.vodstat.report.model.WasunLog"> 
+	   <if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT wn.catergory,count(wn.begin_date) times 
+			FROM wasulog.wasun_${queryMonthParam} wn 
+			WHERE wn.userid = ${userId} and wn.begin_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2}
+			group by wn.catergory
+			order by times desc
+  		</if>
+  		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT wn.catergory,count(wn.begin_date) times 
+						FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId} 
+						and wn.begin_date &gt;= Date(#{repDate1}) 
+						group by wn.catergory
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION ALL
+						SELECT wn.catergory,count(wn.begin_date) times 
+						FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId} 
+						and Date(wn.begin_date) &lt;=#{repDate2}
+						group by wn.catergory
+					</when>
+					<otherwise>
+						UNION ALL
+						SELECT wn.catergory,count(wn.begin_date) times 
+						FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId} 
+						group by wn.catergory
+					</otherwise>
+				</choose>
+			</foreach>
+			order by times desc
+		</if>
+	</select>
+	
+	<select id="getCatergoryDuration" resultMap="WasunLog" parameterType="com.ndtv.vodstat.report.model.WasunLog"> 
+	   <if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT wn.catergory,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times 
+			FROM wasulog.wasun_${queryMonthParam} wn 
+			WHERE wn.userid = ${userId} and wn.begin_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2}
+			group by wn.catergory
+			order by times desc
+  		</if>
+  		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT wn.catergory,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times 
+						FROM wasulog.wasun_${item} wn 
+						WHERE wn.userid = ${userId} and wn.begin_date &gt;= Date(#{repDate1}) 
+						group by wn.catergory
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION ALL
+						SELECT wn.catergory,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times 
+						FROM wasulog.wasun_${item} wn 
+						WHERE wn.userid = ${userId} and Date(wn.begin_date) &lt;= #{repDate2}
+						group by wn.catergory
+					</when>
+					<otherwise>
+						UNION ALL
+						SELECT wn.catergory,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times 
+						FROM wasulog.wasun_${item} wn 
+						WHERE wn.userid = ${userId} 
+						group by wn.catergory
+					</otherwise>
+				</choose>
+			</foreach>
+			order by times desc
+		</if>
+	</select>
+	
+	
+	<select id="getEverydayFrequency" resultMap="WasunLog" parameterType="com.ndtv.vodstat.report.model.WasunLog"> 
+	   <if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT wn.begin_date,sum(wn.active_times) times 
+			FROM wasulog.wasuna_${queryMonthParam} wn 
+			WHERE wn.userid = ${userId} and wn.begin_date &gt;= Date(#{repDate1}) and wn.begin_date &lt;= #{repDate2}
+			group by wn.begin_date
+			order by wn.begin_date
+  		</if>
+  		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT wn.begin_date,sum(wn.active_times) times 
+						FROM wasulog.wasuna_${item} wn WHERE wn.userid = ${userId} 
+						and wn.begin_date &gt;= Date(#{repDate1}) 
+						group by wn.begin_date
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION ALL
+						SELECT wn.begin_date,sum(wn.active_times) times 
+						FROM wasulog.wasuna_${item} wn WHERE wn.userid = ${userId} 
+						and wn.begin_date &lt;= #{repDate2}
+						group by wn.begin_date
+					</when>
+					<otherwise>
+						UNION ALL
+						SELECT wn.begin_date,sum(wn.active_times) times 
+						FROM wasulog.wasuna_${item} wn WHERE wn.userid = ${userId} 
+						group by wn.begin_date
+					</otherwise>
+				</choose>
+			</foreach>
+			order by begin_date
+		</if>
+	</select>
+	
+	<select id="getEverydayDuration" resultMap="WasunLog" parameterType="com.ndtv.vodstat.report.model.WasunLog"> 
+	   <if test="queryMonthParam != null and repDate1 != null and repDate2 != null">
+			SELECT Date(wn.begin_date) begin_date,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times 
+			FROM wasulog.wasun_${queryMonthParam} wn WHERE wn.userid = ${userId} 
+			and wn.begin_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2}
+			group by Date(wn.begin_date)
+			order by begin_date
+  		</if>
+  		<if test="queryMonthParams != null and queryMonthParams.length >= 2">
+			<foreach item="item" index="index" collection="queryMonthParams">
+				<choose>
+					<when test="index ==0 ">
+						SELECT Date(wn.begin_date) begin_date,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times
+						FROM wasulog.wasun_${item} wn  WHERE wn.userid = ${userId} 
+						and wn.begin_date &gt;= Date(#{repDate1}) 
+						group by Date(wn.begin_date)
+					</when>
+					<when test="index + 1 == queryMonthParams.length">
+						UNION ALL
+						SELECT Date(wn.begin_date) begin_date,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times
+						FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId} 
+						and Date(wn.begin_date) &lt;= #{repDate2}
+						group by Date(wn.begin_date)
+					</when>
+					<otherwise>
+						UNION ALL
+						SELECT Date(wn.begin_date) begin_date,SUM(TIMESTAMPDIFF(SECOND, wn.begin_date,wn.end_date)) times
+						FROM wasulog.wasun_${item} wn WHERE wn.userid = ${userId} 
+						group by Date(wn.begin_date)
+					</otherwise>
+				</choose>
+			</foreach>
+			order by begin_date
+		</if>
+	</select>
+	
+</mapper>

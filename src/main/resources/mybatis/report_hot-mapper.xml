@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.ReportHotMapper">
+	<resultMap id="topResultMap" type="com.ndtv.vodstat.report.model.TopResult">
+		<result column="clickTimes" property="clickTimes" jdbcType="DECIMAL" />
+		<result column="userId" property="userId" jdbcType="DECIMAL" />
+		<result column="fullAddress" property="fullAddress" jdbcType="VARCHAR" />
+		<result column="customername" property="customername" jdbcType="VARCHAR" />
+		<result column="film_name" property="filmname" jdbcType="VARCHAR" />
+		<result column="catergory" property="catergory" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="selectColumn">
+	        wa.userid,bv.customername,bv.fulladdress,
+		<if test="showCustomerType">
+			bv.CUSTOMERTYPE,bv.CUSTOMERTYPEID,
+		</if>
+		<if test="showTown">
+			bv.TOWN , bv.TOWNID ,
+		</if>
+		<if test="showCommunity">
+			bv.COMMUNITY, bv.COMMUNITYID,
+		</if>
+		<if test="showVillage">
+			bv.VILLAGE, bv.VILLAGEID,
+		</if>
+		<if test="showUserType">
+			bv.USERTYPEID, bv.USERTYPE,
+		</if>
+	</sql>
+	<sql id="groupbyColumn">
+		<trim prefix="group by " suffixOverrides="," >
+			<include refid="selectColumn" />
+		</trim>
+	</sql>
+		
+	<!-- 查找Top热度用户:按次数 -->
+	<select id="findHotUserByTimes" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+		<include refid="selectColumn"/>
+		sum(wa.active_times) clickTimes
+		FROM wasulog.wasuna_${tableName} wa join boss.boss_user bv on bv.userid=wa.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wa.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wa.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		<include refid="groupbyColumn" />
+		order by clickTimes desc limit 0,100
+	</select>
+	
+	<!-- 查找Top热度用户:按时长 -->
+	<select id="findHotUserByTime" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+		<include refid="selectColumn"/>
+		sum(wa.active_duration) viewTime
+		FROM wasulog.wasuna_${tableName} wa join boss.boss_user bv on bv.userid=wa.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wa.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wa.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		<include refid="groupbyColumn" />
+		order by viewTime desc limit 0,100
+	</select>
+	<!-- 查找Top热度小区:按次数 -->
+	<select id="findHotCommunityByTimes" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+        bv.village VILLAGE,sum(wa.active_times) clickTimes
+		FROM wasulog.wasuna_${tableName} wa join boss.boss_user bv on bv.userid=wa.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wa.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wa.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by bv.village
+		order by clickTimes desc limit 0,20
+	</select>
+	
+	<!-- 查找Top热度小区:按时长 -->
+	<select id="findHotCommunityByTime" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+        bv.village VILLAGE,sum(wa.active_duration) viewTime
+		FROM wasulog.wasuna_${tableName} wa join boss.boss_user bv on bv.userid=wa.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wa.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wa.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by bv.village
+		order by viewTime desc limit 0,20
+	</select>
+	<!-- 查找Top热度节目:按次数 -->
+	<select id="findHotProgramsByTimes" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+		wan.film_name film_name,count(wan.film_name) clickTimes
+		FROM wasulog.wasun_${tableName} wan join boss.boss_user bv on bv.userid=wan.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wan.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wan.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by wan.film_name
+		order by clickTimes desc limit 0,10
+	</select>
+	<!-- 查找Top热度节目:按时长 -->
+	<select id="findHotProgramsByTime" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT
+		wan.film_name film_name,sum(timestampdiff(second,wan.begin_date,wan.end_date)) viewTime
+		FROM wasulog.wasun_${tableName} wan join boss.boss_user bv on bv.userid=wan.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wan.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wan.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by wan.film_name
+		order by viewTime desc limit 0,10
+	</select>
+	<!-- 查找Top分类目录:按次数 -->
+	<select id="findHotTypesByTimes" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT		
+		wan.catergory catergory,count(wan.catergory) clickTimes
+		FROM wasulog.wasun_${tableName} wan join boss.boss_user bv on bv.userid=wan.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wan.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wan.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by wan.catergory
+		order by clickTimes desc limit 0,10
+	</select>
+	<!-- 查找Top分类目录:时长 -->
+	<select id="findHotTypesByTime" parameterType="rep_VodArea" resultMap="topResultMap">
+		SELECT		
+		wan.catergory catergory,sum(timestampdiff(second,wan.begin_date,wan.end_date)) viewTime
+		FROM wasulog.wasun_${tableName} wan join boss.boss_user bv on bv.userid=wan.userid
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="userTypeId > 0">
+	  		and bv.userTypeId = #{userTypeId}
+	  	</if>		
+		<if test="bookDate1 !=null and bookDate2 !=null">
+		  		AND  Date(wan.begin_date) &gt;= Date(#{bookDate1}) AND  Date(wan.end_date) &lt;= Date(#{bookDate2})
+		</if>
+		group by wan.catergory
+		order by viewTime desc limit 0,10
+	</select>
+	<!-- 查找社区经理 数据 -->
+
+	<select id="findManagerViewData" parameterType="areaCondition" resultMap="com.ndtv.vodstat.report.dao.ReportAreaDateMapper.areaDateReportMap">
+		select 
+		REP_DATE,
+		sum(CUSTOMERS) CUSTOMERS,
+		sum(DVB_USERS) DVB_USERS,
+		sum(BB_USERS) BB_USERS,
+		sum(VOD_USERS) VOD_USERS,
+		sum(ANALOG_USERS) ANALOG_USERS,
+		sum(HDSTBS) HDSTBS,
+		sum(ACTIVE_USERS) ACTIVE_USERS,
+		sum(ONLINE_BOOKED_USERS) ONLINE_BOOKED_USERS,
+		sum(ONLINE_UNBOOK_USERS) ONLINE_UNBOOK_USERS,
+		
+		sum(bb_users0) bb_users0,
+		sum(dvb_users0) dvb_users0,
+		sum(vod_users0) vod_users0,
+		sum(analog_users0) analog_users0,
+		sum(host_starts) host_starts,
+		sum(host_stops) host_stops,
+		sum(host_quits) host_quits,
+		sum(host_stoped) host_stoped,
+		sum(host_normal) host_normal,
+		
+		sum(dvb_books) dvb_books,
+		sum(vod_books) vod_books,
+		sum(bb_books) bb_books,
+		sum(dvb_books_new) dvb_books_new,
+		sum(vod_books_new) vod_books_new,
+		sum(bb_books_new) bb_books_new,
+		sum(host_unpay1) host_unpay1,
+		sum(host_unpay2) host_unpay2
+		
+		from REPD_VODAREA bv
+		<where>
+	  		<if test="repDate1 != null">
+	  			<if test="repDate2 == null">
+	  				Date(REP_DATE) = Date(#{repDate1})
+	  			</if>
+	  			<if test="repDate2 != null">
+	  				(REP_DATE &gt;= Date(#{repDate1}) and Date(REP_DATE) &lt;= #{repDate2})
+	  			</if>
+	  		</if>
+	  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+		</where>
+		
+		group by REP_DATE
+  		
+	</select>
+	
+	<select id="findManagerViewPie" parameterType="areaCondition" resultMap="com.ndtv.vodstat.report.dao.ReportAreaDateMapper.areaDateReportMap">
+		select 
+		REP_DATE,bv.village,
+		sum(CUSTOMERS) CUSTOMERS,
+		sum(DVB_USERS) DVB_USERS,
+		sum(BB_USERS) BB_USERS,
+		sum(VOD_USERS) VOD_USERS,
+		sum(ANALOG_USERS) ANALOG_USERS,
+		sum(HDSTBS) HDSTBS,
+		sum(ACTIVE_USERS) ACTIVE_USERS,
+		sum(ONLINE_BOOKED_USERS) ONLINE_BOOKED_USERS,
+		sum(ONLINE_UNBOOK_USERS) ONLINE_UNBOOK_USERS,
+		
+		sum(bb_users0) bb_users0,
+		sum(dvb_users0) dvb_users0,
+		sum(vod_users0) vod_users0,
+		sum(analog_users0) analog_users0,
+		sum(host_starts) host_starts,
+		sum(host_stops) host_stops,
+		sum(host_quits) host_quits,
+		sum(host_stoped) host_stoped,
+		sum(host_normal) host_normal,
+		
+		sum(dvb_books) dvb_books,
+		sum(vod_books) vod_books,
+		sum(bb_books) bb_books,
+		sum(dvb_books_new) dvb_books_new,
+		sum(vod_books_new) vod_books_new,
+		sum(bb_books_new) bb_books_new,
+		sum(host_unpay1) host_unpay1,
+		sum(host_unpay2) host_unpay2
+		
+		from REPD_VODAREA bv
+		where Date(REP_DATE)=Date(#{repDate})
+	  	<include refid="com.ndtv.vodstat.report.dao.areaCondition" />		
+		group by REP_DATE,bv.village  
+				
+	</select>
+</mapper>

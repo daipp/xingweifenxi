@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndtv.vodstat.report.dao.VodAreaNowReportMapper">
+	
+	<sql id="RepVodAreaD_BaseColumns">
+		ID, REP_DATE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID, 
+		ACTIVE_USERS, ONLINE_USERS ,BOOK_USERS, VOD_USERS, STB_USERS, CUSTOMERS
+	</sql>
+	<sql id="RepVodAreaM_BaseColumns">
+		ID, REP_DATE, CUSTOMERTYPE,CUSTOMERTYPEID,  TOWN,TOWNID,  COMMUNITY, COMMUNITYID, VILLAGE, VILLAGEID, 
+		INACTIVE_USERS, OFFLINE_USERS
+	</sql>
+	
+	<!-- //////////////////////////////////////////////////////////////////////////////////////////// -->
+	
+	<sql id="selectColumn">
+		<if test="showCustomerType">
+			bv.CUSTOMERTYPE,bv.CUSTOMERTYPEID,
+		</if>
+		<if test="showTown">
+			bv.TOWN,bv.TOWNID,
+		</if>
+		<if test="showCommunity">
+			bv.COMMUNITY, bv.COMMUNITYID,
+		</if>
+		<if test="showVillage">
+			bv.VILLAGE, bv.VILLAGEID,
+		</if>
+	</sql>
+	
+	<sql id="groupbyColumn">
+		<trim prefix="group by " suffixOverrides="," >
+			<include refid="selectColumn" />
+		</trim>
+	</sql>
+	
+	<!-- 实时统计 -->
+	
+	<!-- 根据登录次数/活跃次数统计 -->
+	<select id="findVodAreaActiveUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.ReportAreaMonthMapper.areaMonthReportMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) ACTIVE_USERS
+		FROM boss.boss_user bv
+		WHERE 1=1
+  		<include refid="com.ndtv.vodstat.report.dao.areaCondition" />
+  		<if test="onlineTimes1 lte 0 and activeTimes1 lte 0 ">
+  			AND bv.usertypeid = 1051
+  		</if>
+  		
+  		<if test="activeDate1 != null and activeDate2 != null">
+			<!-- 登录次数 -->
+			<if test="onlineTimes1 gte 0 or onlineTimes2 gte 0 ">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				(select IFNULL(sum(e.login_times),0) from epglog.epgloga_${item} e WHERE e.userid = bv.userid
+				<if test="index ==0 ">
+						and e.logtime &gt;= Date(#{activeDate1})
+				</if>
+				<if test="index + 1 == queryMonths.length">
+						and Date(e.logtime) &lt;= Date(#{activeDate2})
+				</if>
+				)
+				<if test="index + 1 lt queryMonths.length" >
+					+
+				</if>
+			</foreach>
+			)
+			<choose>
+				<when test="onlineTimes1 gt 0 and onlineTimes2 gt 0">
+					between #{onlineTimes1} AND #{onlineTimes2}
+				</when>
+				<when test="onlineTimes1 gt 0 and onlineTimes2 lte 0">
+					&gt;= #{onlineTimes1}
+				</when>
+				<when test="onlineTimes1 lte 0 and onlineTimes2 gte 0">
+					&lt;= #{onlineTimes2}
+				</when>
+			</choose>
+			</if>
+			
+			<!-- 点播次数 -->
+			<if test="activeTimes1 gte 0 or activeTimes2 gte 0 ">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				(select IFNULL(sum(wn.active_times),0) from wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+				<if test="index ==0 ">
+						and wn.end_date &gt;= Date(#{activeDate1})
+				</if>
+				<if test="index + 1 == queryMonths.length">
+						and Date(wn.begin_date) &lt;= Date(#{activeDate2})
+				</if>
+				)
+				<if test="index + 1 lt queryMonths.length" >
+					+
+				</if>
+			</foreach>
+			)
+			<choose>
+				<when test="activeTimes1 gt 0 and activeTimes2 gt 0">
+					between #{activeTimes1} AND #{activeTimes2}
+				</when>
+				<when test="activeTimes1 gt 0 and activeTimes2 lte 0">
+					&gt;= #{activeTimes1}
+				</when>
+				<when test="activeTimes1 lte 0 and activeTimes2 gte 0">
+					&lt;= #{activeTimes2}
+				</when>
+			</choose>
+			</if>
+		</if>
+  		<if test="showCustomerType or showTown or showCommunity or showVillage">
+			<include refid="groupbyColumn" />
+		</if>
+	</select>
+	
+	<!-- 活跃用户 -->
+	<select id="countActiveUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap" >
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) ACTIVE_USERS
+		FROM boss.boss_user bv
+		WHERE 1=1
+  		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND EXISTS (SELECT * FROM wasulog.wasuna_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.end_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2})
+  		</if>
+		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+						and wn.end_date &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						OR EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+						and wn.begin_date &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						OR EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 登录的在线(订购)用户 -->
+	<select id="countOnlineBookedUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) ONLINE_BOOKED_USERS
+		FROM boss.boss_user bv
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						or EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						or EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 登录的离线(未订购)用户 -->
+	<select id="countOnlineUnbookUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) ONLINE_UNBOOK_USERS
+		FROM boss.boss_user bv
+		WHERE 1=1
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						or EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						or EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 未登录的在线(订购)用户 -->
+	<select id="countOfflineBookedUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) OFFLINE_BOOKED_USERS
+		FROM boss.boss_user bv
+		WHERE bv.userstateid NOT in(8058,8055)
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND NOT EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+ 	<!-- 未登录的离线(未订购)用户 -->
+	<select id="countOfflineUnbookUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) OFFLINE_UNBOOK_USERS
+		FROM boss.boss_user bv
+		WHERE bv.userstateid NOT in(8058,8055)
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND NOT EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		AND EXISTS (
+			SELECT * FROM boss.boss_userproduct up WHERE up.userid = bv.userid AND up.productid = 8120
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND NOT EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+	<!-- 不活跃的登录用户 -->
+	<select id="countInactiveOnlineUser" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) INACTIVE_ONLINE_USERS
+		FROM boss.boss_user bv
+		WHERE bv.userstateid NOT IN (8058,8055)
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+			AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${queryMonth} wn WHERE wn.userid = bv.userid
+				and Date(wn.begin_date) &lt;= #{repDate2} and wn.end_date &gt;= Date(#{repDate1}) )
+			AND NOT EXISTS (SELECT * FROM wasulog.wasue_${queryMonth} we WHERE we.userid = bv.userid
+				and Date(we.begin_date) &lt;= #{repDate2} and we.end_date &gt;= Date(#{repDate1}) )
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						OR EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						OR EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+			
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+							and wn.end_date &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+							and wn.begin_date &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+	
+	<!-- 不活跃的未登用户 -->
+	<select id="countInactiveOfflineUsers" parameterType="rep_VodArea" resultMap="com.ndtv.vodstat.report.dao.areaResultMap">
+		SELECT  
+		<include refid="selectColumn" />
+		COUNT(*) INACTIVE_OFFLINE_USERS
+		FROM boss.boss_user bv
+		WHERE bv.userstateid NOT IN (8058,8055)
+		<include refid="com.ndtv.vodstat.report.dao.vodAreaCondition" />
+		AND EXISTS  (
+			SELECT * FROM boss.boss_USERPRODUCT up WHERE up.userid = bv.userid and up.productId in(4208,4217) 
+			AND up.endtime &gt;= Date(#{repDate1}) AND DATE(up.begintime) &lt;= #{repDate2}
+  		)
+		<if test="queryMonth != null and repDate1 != null and repDate2 != null">
+			AND NOT EXISTS (SELECT * FROM epglog.epgloga_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.logtime &gt;= Date(#{repDate1}) and Date(wn.logtime) &lt;= #{repDate2})
+			AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.end_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2})
+			AND NOT EXISTS (SELECT * FROM wasulog.wasue_${queryMonth} wn WHERE wn.userid = bv.userid
+				and wn.end_date &gt;= Date(#{repDate1}) and Date(wn.begin_date) &lt;= #{repDate2})
+  		</if>
+  		<if test="queryMonths != null and queryMonths.length >= 2">
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid
+							and wn.logtime &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM epglog.epgloga_${item} wn WHERE wn.userid = bv.userid )
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+			
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+							and wn.end_date &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+							and wn.begin_date &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM wasulog.wasuna_${item} wn WHERE wn.userid = bv.userid
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+			
+			AND (
+			<foreach item="item" index="index" collection="queryMonths">
+				<choose>
+					<when test="index ==0 ">
+						NOT EXISTS (SELECT * FROM wasulog.wasue_${item} wn WHERE wn.userid = bv.userid
+							and wn.end_date &gt;= Date(#{repDate1}))
+					</when>
+					<when test="index + 1 == queryMonths.length">
+						AND NOT EXISTS (SELECT * FROM wasulog.wasue_${item} wn WHERE wn.userid = bv.userid
+							and wn.begin_date &lt;= Date(#{repDate2}))
+					</when>
+					<otherwise>
+						AND NOT EXISTS (SELECT * FROM wasulog.wasue_${item} wn WHERE wn.userid = bv.userid
+					</otherwise>
+				</choose>
+			</foreach>
+			)
+		</if>
+		<include refid="groupbyColumn" />
+	</select>
+
+</mapper>
